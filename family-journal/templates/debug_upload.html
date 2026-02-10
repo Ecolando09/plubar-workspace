@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Debug Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 800px; margin: 0 auto; }
+        #status { background: #f0f0f0; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        #console { background: #1a1a2e; color: #00ff00; padding: 20px; border-radius: 8px; font-family: monospace; max-height: 400px; overflow-y: auto; }
+        .log-info { color: #00bfff; }
+        .log-success { color: #00ff00; }
+        .log-error { color: #ff4444; }
+        .log-upload { color: #ffff00; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        progress { width: 100%; height: 30px; }
+    </style>
+</head>
+<body>
+    <h1>Upload Debug Test</h1>
+    
+    <input type="file" id="fileInput" accept="video/*">
+    <button onclick="upload()">Upload</button>
+    
+    <div id="status"></div>
+    <progress id="progressBar" value="0" max="100" style="display:none;"></progress>
+    <div id="progressText"></div>
+    
+    <h3>Console Log:</h3>
+    <div id="console"></div>
+
+    <script>
+        function log(msg, type='info') {
+            const consoleDiv = document.getElementById('console');
+            const line = document.createElement('div');
+            line.className = 'log-' + type;
+            line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+            consoleDiv.appendChild(line);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console.log('[DEBUG] ' + type.toUpperCase() + ':', msg);
+        }
+        
+        async function upload() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log('No file selected!', 'error');
+                return;
+            }
+            
+            log('Starting upload: ' + file.name + ' (' + formatSize(file.size) + ')', 'info');
+            log('File type: ' + file.type, 'info');
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const xhr = new XMLHttpRequest();
+            
+            // Progress handler
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    document.getElementById('progressBar').style.display = 'block';
+                    document.getElementById('progressBar').value = percent;
+                    document.getElementById('progressText').textContent = 
+                        'Uploading: ' + formatSize(e.loaded) + ' / ' + formatSize(e.total) + ' (' + percent + '%)';
+                    log('Upload progress: ' + percent + '%', 'upload');
+                }
+            });
+            
+            // Load handler
+            xhr.addEventListener('load', function() {
+                log('XHR load event fired', 'info');
+                log('XHR status: ' + xhr.status, 'info');
+                log('XHR response text: ' + xhr.responseText.substring(0, 500), 'info');
+                
+                try {
+                    const result = JSON.parse(xhr.responseText);
+                    log('Parsed result:', 'info');
+                    log('  status: ' + result.status, 'info');
+                    log('  drive: ' + result.drive, 'info');
+                    log('  upload_id: ' + (result.upload_id || 'N/A'), 'info');
+                    log('  url: ' + (result.url || 'N/A'), 'info');
+                    log('  error: ' + (result.error || 'none'), 'info');
+                    
+                    if (result.status === 'uploaded') {
+                        if (result.drive && result.upload_id) {
+                            log('Large file - tracking Drive progress...', 'info');
+                            trackDriveProgress(result.upload_id);
+                        } else {
+                            log('Upload complete!', 'success');
+                            document.getElementById('status').innerHTML = '<h2 style="color:green">✅ Upload Complete!</h2>';
+                        }
+                    } else {
+                        log('Upload failed: ' + (result.error || 'Unknown error'), 'error');
+                        document.getElementById('status').innerHTML = '<h2 style="color:red">❌ Upload Failed: ' + (result.error || 'Unknown') + '</h2>';
+                    }
+                } catch (e) {
+                    log('Failed to parse response: ' + e.message, 'error');
+                    document.getElementById('status').innerHTML = '<h2 style="color:red">❌ Parse Error: ' + e.message + '</h2>';
+                }
+            });
+            
+            // Error handler
+            xhr.addEventListener('error', function() {
+                log('XHR error event!', 'error');
+                document.getElementById('status').innerHTML = '<h2 style="color:red">❌ Network Error</h2>';
+            });
+            
+            // Timeout handler
+            xhr.timeout = 600000;
+            xhr.addEventListener('timeout', function() {
+                log('XHR timeout!', 'error');
+                document.getElementById('status').innerHTML = '<h2 style="color:red">❌ Timeout</h2>';
+            });
+            
+            log('Opening POST /upload-progress...', 'info');
+            xhr.open('POST', '/upload-progress');
+            xhr.send(formData);
+            log('Upload sent!', 'info');
+        }
+        
+        async function trackDriveProgress(uploadId) {
+            log('trackDriveProgress called with: ' + uploadId, 'info');
+            
+            const maxWait = 600000;
+            const pollInterval = 500;
+            const startTime = Date.now();
+            
+            while (Date.now() - startTime < maxWait) {
+                log('Polling /upload-status/' + uploadId, 'info');
+                
+                try {
+                    const response = await fetch('/upload-status/' + uploadId);
+                    log('Status response: ' + response.status, 'info');
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        log('Status data: ' + JSON.stringify(data), 'info');
+                        
+                        if (data.complete) {
+                            log('Drive upload COMPLETE!', 'success');
+                            document.getElementById('progressBar').value = 100;
+                            document.getElementById('progressText').textContent = '✅ Ready!';
+                            document.getElementById('status').innerHTML = '<h2 style="color:green">✅ Drive Upload Complete!</h2>';
+                            return;
+                        }
+                        
+                        if (data.progress !== undefined) {
+                            document.getElementById('progressBar').value = data.progress;
+                            document.getElementById('progressText').textContent = 'Drive progress: ' + data.progress + '%';
+                            log('Drive progress: ' + data.progress + '%', 'upload');
+                        }
+                    }
+                } catch (e) {
+                    log('Status poll error: ' + e.message, 'error');
+                }
+                
+                await new Promise(r => setTimeout(r, pollInterval));
+            }
+            
+            log('Timeout waiting for Drive upload!', 'error');
+            document.getElementById('status').innerHTML = '<h2 style="color:red">❌ Drive Upload Timeout</h2>';
+        }
+        
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+            return (bytes/(1024*1024)).toFixed(1) + ' MB';
+        }
+    </script>
+</body>
+</html>

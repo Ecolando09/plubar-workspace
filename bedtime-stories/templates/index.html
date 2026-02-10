@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bedtime Stories - Create Your Story</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            text-align: center;
+            color: #a0a0a0;
+            margin-bottom: 40px;
+        }
+        .form-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #feca57;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        option {
+            background: #1a1a2e;
+        }
+        .btn {
+            display: inline-block;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: #fff;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+        }
+        .btn-secondary {
+            background: linear-gradient(45deg, #54a0ff, #2e86de);
+            color: #fff;
+            margin-top: 20px;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(84, 160, 255, 0.4);
+        }
+        .voice-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .voice-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .voice-option:hover {
+            border-color: #54a0ff;
+        }
+        .voice-option.selected {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+        }
+        .voice-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .voice-desc {
+            font-size: 0.85em;
+            color: #a0a0a0;
+        }
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 600px) {
+            .row, .voice-options {
+                grid-template-columns: 1fr;
+            }
+        }
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+        .star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        .recording-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .btn-record {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-record:hover {
+            transform: translateY(-2px);
+        }
+        .btn-record.recording {
+            background: linear-gradient(45deg, #ff0000, #cc0000);
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .recording-status {
+            display: none;
+            color: #ff6b6b;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .recording-status.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <h1>✨ Bedtime Stories 🌙</h1>
+        <p class="subtitle">Create magical stories for your little one</p>
+        
+        <div class="form-card">
+            <form action="/create" method="POST" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="form-section">
+                        <label for="name">Child's Name</label>
+                        <input type="text" id="name" name="name" placeholder="Enter name" required>
+                    </div>
+                    <div class="form-section">
+                        <label for="age">Age</label>
+                        <select id="age" name="age" required>
+                            <option value="3">3 years old</option>
+                            <option value="4" selected>4 years old</option>
+                            <option value="5">5 years old</option>
+                            <option value="6">6 years old</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <label for="details">Tell us about your story</label>
+                    <textarea id="details" name="details" placeholder="Who is in the story? Where does it take place? What happens?&#10;&#10;Example: 'A brave little owl who lives in a magical forest and goes on an adventure to find a lost star'"></textarea>
+                    
+                    <div class="recording-controls">
+                        <button type="button" class="btn-record" id="recordBtn" onclick="toggleRecording()">
+                            🎤 <span id="recordText">Record Voice</span>
+                        </button>
+                        <input type="file" id="voiceRecording" name="voiceRecording" accept="audio/*" style="display: none;">
+                        <button type="button" class="btn-record" onclick="document.getElementById('voiceRecording').click()" style="background: linear-gradient(45deg, #54a0ff, #2e86de);">
+                            📁 Upload Audio
+                        </button>
+                    </div>
+                    <div class="recording-status" id="recordingStatus">
+                        Recording... Click 'Stop' when done
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <label for="positive_value">Positive Value to Learn</label>
+                    <select id="positive_value" name="positive_value" required>
+                        <option value="kindness">Kindness</option>
+                        <option value="sharing">Sharing</option>
+                        <option value="bravery">Bravery</option>
+                        <option value="friendship">Friendship</option>
+                        <option value="curiosity">Curiosity</option>
+                        <option value="honesty">Honesty</option>
+                        <option value="gratitude">Gratitude</option>
+                        <option value="patience">Patience</option>
+                    </select>
+                </div>
+                
+                <div class="form-section">
+                    <label>Voice for Story</label>
+                    <div class="voice-options">
+                        <div class="voice-option selected" onclick="selectVoice('amy')">
+                            <div class="voice-name">🎀 Amy</div>
+                            <div class="voice-desc">Warm British</div>
+                        </div>
+                        <div class="voice-option" onclick="selectVoice('daniel')">
+                            <div class="voice-name">👦 Daniel</div>
+                            <div class="voice-desc">Friendly American</div>
+                        </div>
+                        <div class="voice-option" onclick="selectVoice('bella')">
+                            <div class="voice-name">💕 Bella</div>
+                            <div class="voice-desc">Cheerful Female</div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="voice" name="voice" value="amy">
+                </div>
+                
+                <button type="submit" class="btn btn-primary">✨ Create Magic Story ✨</button>
+            </form>
+            
+            <a href="/library" class="btn btn-secondary">📚 My Story Library</a>
+        </div>
+    </div>
+    
+    <script>
+        // Create stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 2 + 's';
+            starsContainer.appendChild(star);
+        }
+        
+        function selectVoice(voice) {
+            document.querySelectorAll('.voice-option').forEach(el => el.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            document.getElementById('voice').value = voice;
+        }
+        
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        
+        async function toggleRecording() {
+            const recordBtn = document.getElementById('recordBtn');
+            const recordText = document.getElementById('recordText');
+            const recordingStatus = document.getElementById('recordingStatus');
+            const voiceInput = document.getElementById('voiceRecording');
+            
+            if (!isRecording) {
+                // Start recording
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
+                    
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(audioFile);
+                        voiceInput.files = dataTransfer.files;
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+                    
+                    mediaRecorder.start();
+                    isRecording = true;
+                    recordBtn.classList.add('recording');
+                    recordText.textContent = '⏹️ Stop';
+                    recordingStatus.classList.add('visible');
+                } catch (err) {
+                    alert('Could not access microphone. Please use the upload button or type your details.');
+                    console.error(err);
+                }
+            } else {
+                // Stop recording
+                mediaRecorder.stop();
+                isRecording = false;
+                recordBtn.classList.remove('recording');
+                recordText.textContent = '🎤 Record Again';
+                recordingStatus.classList.remove('visible');
+            }
+        }
+    </script>
+</body>
+</html>

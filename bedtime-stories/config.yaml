@@ -1,0 +1,45 @@
+app_name: Bedtime Stories
+version: 1.0.0
+
+# Cloudflare configuration
+cloudflare:
+  tunnel_url: http://localhost:5004
+  pages_project: bedtime-stories
+
+# TTS Configuration
+tts:
+  piper:
+    enabled: true
+    voice: en_US-lessac-medium
+    output_format: wav
+  elevenlabs:
+    enabled: true
+    api_key: YOUR_ELEVENLABS_API_KEY
+    voices:
+      amy:
+        id: YOUR_AMY_VOICE_ID
+        name: Amy (British)
+      daniel:
+        id: YOUR_DANIEL_VOICE_ID
+        name: Daniel (American)
+      bella:
+        id: YOUR_BELLA_VOICE_ID
+        name: Bella (Cheerful)
+
+# Story settings
+stories:
+  default_age: 4
+  max_story_length: 500
+  values:
+    - kindness
+    - sharing
+    - bravery
+    - friendship
+    - curiosity
+    - honesty
+    - gratitude
+
+# Storage
+storage:
+  type: local  # local or kv
+  stories_file: /root/.openclaw/workspace/bedtime-stories/stories.json

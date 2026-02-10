@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "skills": {
+    "openai-whisper-api": {
+      "version": "1.0.0",
+      "installedAt": 1770502237430
+    },
+    "elevenlabs-stt": {
+      "version": "1.0.0",
+      "installedAt": 1770502404469
+    },
+    "google-drive": {
+      "version": "1.0.3",
+      "installedAt": 1770609390217
+    },
+    "brave-search": {
+      "version": "1.0.1",
+      "installedAt": 1770735171726
+    },
+    "agentchat": {
+      "version": "0.14.0",
+      "installedAt": 1770737642714
+    },
+    "git-sync": {
+      "version": "1.1.0",
+      "installedAt": 1770738175854
+    },
+    "gog": {
+      "version": "1.0.0",
+      "installedAt": 1770751790329
+    }
+  }
+}

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ story.title }} - Bedtime Stories</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .story-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #feca57;
+        }
+        .story-content {
+            font-size: 1.3em;
+            line-height: 1.8;
+            text-align: center;
+            white-space: pre-line;
+            color: #e0e0e0;
+        }
+        .audio-player {
+            margin: 30px 0;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+        .audio-player h3 {
+            margin-bottom: 15px;
+            color: #54a0ff;
+        }
+        .audio-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        audio {
+            width: 100%;
+            max-width: 400px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+        }
+        .btn-secondary {
+            background: linear-gradient(45deg, #54a0ff, #2e86de);
+            color: #fff;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(84, 160, 255, 0.4);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+        }
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #fff;
+        }
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .values {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .value-badge {
+            background: linear-gradient(45deg, #feca57, #ff9f43);
+            color: #1a1a2e;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        .age-badge {
+            background: rgba(84, 160, 255, 0.3);
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+        .star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        .voice-selector {
+            margin-bottom: 15px;
+        }
+        .voice-selector label {
+            margin-right: 15px;
+            cursor: pointer;
+        }
+        @media (max-width: 600px) {
+            .story-content {
+                font-size: 1.1em;
+            }
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <div class="story-card">
+            <h1>{{ story.title }}</h1>
+            
+            <div class="values">
+                <span class="age-badge">👶 {{ story.age_group }} years</span>
+                {% for value in story.values %}
+                <span class="value-badge">💫 {{ value|capitalize }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="audio-player">
+                <h3>🔊 Listen to the Story</h3>
+                <div class="voice-selector">
+                    <label>
+                        <input type="radio" name="voice" value="amy" checked onchange="updateAudio('amy')"> 🎀 Amy (British)
+                    </label>
+                    <label>
+                        <input type="radio" name="voice" value="daniel" onchange="updateAudio('daniel')"> 👦 Daniel (American)
+                    </label>
+                    <label>
+                        <input type="radio" name="voice" value="bella" onchange="updateAudio('bella')"> 💕 Bella (Cheerful)
+                    </label>
+                </div>
+                <audio id="audioPlayer" controls>
+                    <source src="" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <p id="audioNote" style="color: #a0a0a0; margin-top: 10px; font-size: 0.9em;">
+                    Configure TTS settings in config.yaml to enable audio playback
+                </p>
+            </div>
+            
+            <div class="story-content">{{ story.content }}</div>
+            
+            <div class="actions">
+                <button class="btn btn-secondary" onclick="saveStory()">💾 Save Story</button>
+                <button class="btn btn-outline" onclick="playAudio()">▶️ Read Aloud</button>
+                <a href="/" class="btn btn-primary">✨ New Story</a>
+                <a href="/library" class="btn btn-outline">📚 Library</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const storyData = {
+            title: '{{ story.title }}',
+            content: `{{ story.content }}`,
+            voice: 'amy',
+            age_group: '{{ story.age_group }}',
+            values: {{ story.values|tojson }}
+        };
+        
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        function updateAudio(voice) {
+            storyData.voice = voice;
+            const player = document.getElementById('audioPlayer');
+            player.src = `/tts/${voice}?text=${encodeURIComponent(storyData.content.substring(0, 200))}`;
+            player.load();
+        }
+        
+        function playAudio() {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(storyData.content);
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                speechSynthesis.speak(utterance);
+            } else {
+                alert('Browser speech synthesis not supported. Configure TTS in settings.');
+            }
+        }
+        
+        function saveStory() {
+            fetch('/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(storyData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Story saved! 📚');
+                }
+            })
+            .catch(error => {
+                alert('Error saving story: ' + error);
+            });
+        }
+        
+        createStars();
+    </script>
+</body>
+</html>

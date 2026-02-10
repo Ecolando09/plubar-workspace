@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚂 Meal Train Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+:root {
+  --color-primary: #667eea; --color-secondary: #764ba2; --color-success: #48bb78;
+  --color-success-light: #c6f6d5; --color-warning: #ed8936;
+  --color-warning-light: #feebc8; --color-error: #f56565;
+  --color-error-light: #fed7d7; --color-text-primary: #1a202c;
+  --color-text-secondary: #4a5568; --color-text-muted: #718096;
+  --color-background: #f7fafc; --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --space-xs:4px; --space-sm:8px; --space-md:16px; --space-lg:24px; --space-xl:32px;
+  --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-xl:24px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.08); --shadow-md:0 4px 12px rgba(0,0,0,0.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font:400 16px/1.6 var(--font-family,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto);
+  color:var(--color-text-primary);background:var(--color-background);
+  padding:var(--space-md)
+}
+.container{max-width:800px;margin:0 auto}
+h1{font:700 28px/1.2 Nunito,var(--font-family);color:var(--color-text-primary);
+  margin-bottom:var(--space-lg)}
+h2{font:600 22px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
+  margin-bottom:var(--space-md)}
+.section{margin-bottom:var(--space-xl)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-sm);
+  padding:10px 20px;font:600 16px/1 var(--font-family);border:none;
+  border-radius:var(--radius-md);cursor:pointer;min-height:44px}
+.btn-primary{background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));
+  color:white}
+.btn-success{background:linear-gradient(135deg,var(--color-success),#38a169));color:white}
+.btn-danger{background:var(--color-error);color:white}
+.btn-sm{padding:8px 12px;font-size:14px;min-height:36px}
+.btn-full{width:100%}
+.card{background:var(--color-surface);border-radius:var(--radius-lg);
+  padding:var(--space-lg);margin-bottom:var(--space-md);box-shadow:var(--shadow-sm)}
+.stats{display:flex;gap:var(--space-md);margin-bottom:var(--space-xl);flex-wrap:wrap}
+.stat{background:var(--color-surface);border-radius:var(--radius-md);
+  padding:var(--space-lg);flex:1;min-width:150px;text-align:center;
+  box-shadow:var(--shadow-sm)}
+.stat .value{font:700 32px/1 Nunito,var(--font-family);color:var(--color-primary)}
+.stat .label{font-size:14px;color:var(--color-text-muted);margin-top:var(--space-xs)}
+.meal-item{border-left:4px solid var(--color-primary)}
+.meal-item.claimed{border-left-color:var(--color-success)}
+.meal-header{display:flex;justify-content:space-between;align-items:start;
+  margin-bottom:var(--space-sm)}
+.meal-title{font-weight:600;font-size:1.1em}
+.meal-meta{font-size:14px;color:var(--color-text-muted)}
+.meal-note{background:var(--color-background);padding:var(--space-sm) var(--space-md);
+  border-radius:var(--radius-sm);margin:var(--space-sm) 0;font-size:14px}
+.meal-actions{display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-top:var(--space-md)}
+.badge{display:inline-block;padding:4px 12px;border-radius:var(--radius-full);
+  font-size:12px;font-weight:600}
+.badge-pending{background:var(--color-warning-light);color:#744210}
+.badge-claimed{background:var(--color-success-light);color:#22543d}
+.badge-old{background:var(--color-error-light);color:#742a2a}
+textarea{width:100%;padding:14px;border:2px solid var(--color-border);
+  border-radius:var(--radius-md);font:400 16px var(--font-family);
+  resize:vertical;min-height:80px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:var(--space-sm) var(--space-md);text-align:left;
+  border-bottom:1px solid var(--color-border)}
+th{font:600 14px var(--font-family);color:var(--color-text-muted);
+  text-transform:uppercase;letter-spacing:0.5px}
+.actions{display:flex;gap:var(--space-xs)}
+.header{display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:var(--space-xl);flex-wrap:wrap;gap:var(--space-sm)}
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚂 Meal Train Admin</h1>
+            <a href="/admin/logout" class="btn btn-primary">🔓 Logout</a>
+        </div>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="value">{{ stats.total }}</div>
+                <div class="label">Total Meals</div>
+            </div>
+            <div class="stat">
+                <div class="value">{{ stats.pending }}</div>
+                <div class="label">Pending</div>
+            </div>
+            <div class="stat">
+                <div class="value">{{ stats.claimed }}</div>
+                <div class="label">Claimed</div>
+            </div>
+            <div class="stat">
+                <div class="value">{{ participants|length }}</div>
+                <div class="label">Participants</div>
+            </div>
+        </div>
+        
+        {% if success_message %}
+        <div style="background:var(--color-success-light);color:#22543d;padding:var(--space-md);border-radius:var(--radius-md);margin-bottom:var(--space-lg);text-align:center;font-weight:600;">
+            ✅ {{ success_message }}
+        </div>
+        {% endif %}
+        
+        <div class="section">
+            <h2>🚂 Request a Meal</h2>
+            <div class="card">
+                <form action="/admin/create-meal" method="POST" enctype="multipart/form-data">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-md);">
+                        <div>
+                            <label style="font:500 14px var(--font-family);color:var(--color-text-secondary);
+                              margin-bottom:var(--space-sm);display:block;">Meal Type / Restaurant</label>
+                            <input type="text" name="meal_type" placeholder="e.g., Chipotle, Pizza, etc." style="width:100%;padding:14px;border:2px solid var(--color-border);border-radius:var(--radius-md);font:400 16px var(--font-family);">
+                        </div>
+                        <div>
+                            <label style="font:500 14px var(--font-family);color:var(--color-text-secondary);
+                              margin-bottom:var(--space-sm);display:block;">Amount ($)</label>
+                            <input type="number" name="amount" placeholder="25" style="width:100%;padding:14px;border:2px solid var(--color-border);border-radius:var(--radius-md);font:400 16px var(--font-family);">
+                        </div>
+                    </div>
+                    <div class="section">
+                        <label style="font:500 14px var(--font-family);color:var(--color-text-secondary);
+                          margin-bottom:var(--space-sm);display:block;">Receipt Image (optional)</label>
+                        <input type="file" name="receipt" accept="image/*" style="width:100%;padding:14px;border:2px solid var(--color-border);border-radius:var(--radius-md);">
+                        <small style="color:var(--color-text-muted);">This image will be attached to the email sent to participants</small>
+                    </div>
+                    <div class="section">
+                        <label style="font:500 14px var(--font-family);color:var(--color-text-secondary);
+                          margin-bottom:var(--space-sm);display:block;">Note (optional)</label>
+                        <textarea name="note" placeholder="Any special requests? (e.g., 'Thinking of vegetarian options')"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-full">
+                        📧 Send Meal Request to All Participants
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📋 Meal History</h2>
+            {% for meal in meals %}
+            <div class="card meal-item {% if meal.claimed %}claimed{% endif %}">
+                <div class="meal-header">
+                    <span class="meal-title">
+                        {% if meal.claimed %}
+                        ✅ {{ meal.get('participant_name', 'Someone') }}
+                        {% else %}
+                        ⏳ Pending
+                        {% endif %}
+                    </span>
+                    <span class="meal-meta">{{ meal.formatted_date }}</span>
+                </div>
+                
+                {% if meal.meal_type %}
+                <div style="font-weight:600;color:#667eea;">{{ meal.meal_type }}</div>
+                {% endif %}
+                {% if meal.amount %}
+                <div style="font-weight:600;color:#48bb78;">${{ meal.amount }}</div>
+                {% endif %}
+                
+                {% if meal.note %}
+                <div class="meal-note">💬 {{ meal.note }}</div>
+                {% endif %}
+                
+                <div class="meal-meta">
+                    ⏱️ {{ meal.time_ago }}
+                    {% if meal.claimed %}
+                    <span class="badge badge-claimed">Claimed</span>
+                    {% else %}
+                    <span class="badge {% if 'hour' in meal.time_ago or 'minute' in meal.time_ago %}badge-pending{% else %}badge-old{% endif %}">
+                        Waiting
+                    </span>
+                    {% endif %}
+                </div>
+                
+                {% if not meal.claimed %}
+                <div class="meal-actions">
+                    <a href="/admin/resend-notification/{{ meal.id }}" class="btn btn-primary btn-sm">
+                        📧 Resend Email
+                    </a>
+                    <a href="/admin/delete-meal/{{ meal.id }}" class="btn btn-danger btn-sm"
+                       onclick="return confirm('Delete this meal request?');">
+                        🗑️ Delete
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="card" style="text-align:center;color:var(--color-text-muted);">
+                No meals yet. Request one above!
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="section">
+            <h2>👥 Participants</h2>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Joined</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in participants %}
+                        <tr>
+                            <td>{{ p.name }}</td>
+                            <td>{{ p.email }}</td>
+                            <td>{{ p.get('joined_at', 'N/A')[:10] }}</td>
+                            <td>
+                                <a href="/admin/delete-participant/{{ p.id }}" class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Remove {{ p.name }} from the train?');">
+                                    🗑️ Remove
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div style="text-align:center;margin-top:var(--space-xl);">
+            <a href="/" class="btn btn-primary">🏠 Back to Public Page</a>
+        </div>
+    </div>
+</body>
+</html>

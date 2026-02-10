@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Item Shop - Literacy Quest{% endblock %}
+
+{% block content %}
+<div style="text-align: center;">
+
+<h2 style="color: #ffd700; margin-bottom: 10px; font-size: 2rem;">
+    🛒 Item Shop
+</h2>
+
+<p style="color: #88a4c8; margin-bottom: 30px;">
+    Spend your gold on powerful items!
+</p>
+
+<div style="
+    background: rgba(255, 215, 0, 0.2);
+    border: 3px solid #ffd700;
+    border-radius: 25px;
+    padding: 15px 30px;
+    display: inline-block;
+    margin-bottom: 30px;
+">
+    <span style="font-size: 2rem; margin-right: 10px;">🪙</span>
+    <span style="font-size: 2rem; color: #ffd700; font-weight: bold;">{{ gold }}</span>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; max-width: 800px; margin: 0 auto;">
+    {% for item in items %}
+    <div style="
+        background: linear-gradient(135deg, rgba(0,0,0,0.3), rgba(0,0,0,0.5));
+        border-radius: 25px;
+        padding: 30px;
+        border: 2px solid rgba(255,255,255,0.1);
+    ">
+        <div style="font-size: 4rem; margin-bottom: 15px;">{{ item.emoji }}</div>
+        <h3 style="color: #ffd700; margin-bottom: 10px;">{{ item.name }}</h3>
+        <p style="color: #88a4c8; margin-bottom: 20px;">{{ item.desc }}</p>
+        
+        {% if gold >= item.cost %}
+        <button onclick="buyItem('{{ item.id }}')" class="btn btn-small btn-success">
+            🪙 {{ item.cost }} Buy
+        </button>
+        {% else %}
+        <button class="btn btn-small" disabled style="
+            background: rgba(255,255,255,0.1);
+            color: #666;
+            cursor: not-allowed;
+        ">
+            🪙 {{ item.cost }} (Need {{ item.cost - gold }} more)
+        </button>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+async function buyItem(itemId) {
+    const response = await fetch('/api/buy/' + itemId, {method: 'POST'});
+    const data = await response.json();
+    
+    if (data.success) {
+        showCelebration();
+        setTimeout(() => window.location.reload(), 500);
+    } else {
+        alert(data.error || 'Could not buy item');
+    }
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,12 @@
+#!/bin/bash
+# Memory Maintenance Cron Jobs
+# Run as root
+
+# Hourly memory summarization
+0 * * * * /usr/bin/python3 /root/.openclaw/workspace/memory/hourly_summarizer.py >> /root/.openclaw/workspace/memory/hourly.log 2>&1
+
+# Pre-compaction dump every 30 minutes
+*/30 * * * * /usr/bin/python3 /root/.openclaw/workspace/memory/precompact_dump.py >> /root/.openclaw/workspace/memory/precompact.log 2>&1
+
+# Vector embedding job every 2 hours
+0 */2 * * * /usr/bin/python3 /root/.openclaw/workspace/memory/embed_memories.py >> /root/.openclaw/workspace/memory/embed.log 2>&1

@@ -1,0 +1,35 @@
+app:
+  debug: false
+  host: 0.0.0.0
+  max_content_length: 1073741824
+  port: 5001
+  timeout: 600
+  upload_folder: /root/.openclaw/workspace/family-journal/uploads
+  google_drive_folder_id: 17EbE962SU9WNIUi4ZxJt6m8RN6Q7W1iH
+email:
+  sender_email: landon.gennetten@gmail.com
+  sender_name: Landon's Family Journal
+  sender_password: jowyzwbkfhdeaotu
+  smtp_port: 587
+  smtp_server: smtp.gmail.com
+  use_tls: true
+kids:
+- avatar_emoji: "\U0001F467"
+  birthdate: '2026-01-08'
+  email: buddhababediana@gmail.com
+  name: Diana Atlas
+- avatar_emoji: "\U0001F466"
+  birthdate: '2019-06-06'
+  email: buddhababejade@gmail.com
+  name: Jade Atlas
+- avatar_emoji: "\U0001F466"
+  birthdate: '2022-10-13'
+  email: buddhababejulian@gmail.com
+  name: Julian Atlas
+parents:
+- email: landon.gennetten@gmail.com
+  name: Landon
+- email: Kelley.atlas@gmail.com
+  name: Kelley
+site:
+  url: http://journal.gennetten.org

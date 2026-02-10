@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Admin Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+:root {
+  --color-primary: #667eea; --color-secondary: #764ba2; --color-error: #f56565;
+  --color-error-light: #fed7d7; --color-text-primary: #1a202c;
+  --color-text-muted: #718096; --color-background: #f7fafc;
+  --color-surface: #ffffff; --color-border: #e2e8f0;
+  --space-xs:4px; --space-sm:8px; --space-md:16px; --space-lg:24px; --space-xl:32px;
+  --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-xl:24px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.08); --shadow-md:0 4px 12px rgba(0,0,0,0.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font:400 16px/1.6 var(--font-family,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto);
+  background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));
+  min-height:100vh;padding:var(--space-md);
+  display:flex;align-items:center;justify-content:center
+}
+.container{max-width:400px;width:100%;background:var(--color-surface);
+  border-radius:var(--radius-xl);padding:var(--space-xl);
+  box-shadow:var(--shadow-md)}
+h1{font:700 28px/1.2 Nunito,var(--font-family);color:var(--color-text-primary);
+  margin-bottom:var(--space-lg);text-align:center}
+.section{margin-bottom:var(--space-lg)}
+.label{font:500 12px/1.4 var(--font-family);color:var(--color-text-muted);
+  text-transform:uppercase;letter-spacing:0.5px;margin-bottom:var(--space-xs);display:block}
+.input{width:100%;padding:14px var(--space-md);
+  font:400 16px var(--font-family);color:var(--color-text-primary);
+  background:var(--color-surface);border:2px solid var(--color-border);
+  border-radius:var(--radius-md)}
+.input:focus{outline:none;border-color:var(--color-primary)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-sm);
+  padding:14px var(--space-lg);font:600 18px/1 var(--font-family);border:none;
+  border-radius:var(--radius-md);cursor:pointer;min-height:56px;width:100%}
+.btn-primary{background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));
+  color:white}
+.btn-back{background:var(--color-background);color:var(--color-text-primary);
+  margin-top:var(--space-sm)}
+.error{background:var(--color-error-light);color:var(--color-error);
+  padding:var(--space-md);border-radius:var(--radius-md);margin-bottom:var(--space-lg)}
+</style>
+</head>
+<body>
+    <div class="container">
+        <div style="font-size:48px;margin-bottom:var(--space-md);text-align:center;">🔐</div>
+        
+        <h1>Admin Login</h1>
+        
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        <form method="POST">
+            <div class="section">
+                <label>Password</label>
+                <input type="password" name="password" class="input" placeholder="Enter admin password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">🔓 Login</button>
+        </form>
+        
+        <a href="/" class="btn btn-back">← Back to Train</a>
+    </div>
+</body>
+</html>

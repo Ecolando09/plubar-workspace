@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}{{ kid_name }}'s Reading Adventure{% endblock %}
+
+{% block content %}
+<a href="/" class="back-link">
+    🏠 Back to Map
+</a>
+
+<h2 style="text-align: center; color: #558b2f; margin-bottom: 30px; font-size: 2rem;">
+    📖 Let's Practice Reading!
+</h2>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; max-width: 900px; margin: 0 auto;">
+    {% for word in words %}
+    <a href="/practice/{{ level_id }}/{{ word.word }}" class="word-card {% if word.word in completed_words %}completed{% endif %}" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 30px 20px;
+        background: white;
+        border-radius: 25px;
+        text-decoration: none;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        transition: all 0.3s;
+        position: relative;
+    ">
+        {% if word.word in completed_words %}
+        <div style="
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+        ">⭐⭐</div>
+        {% endif %}
+        
+        <div style="font-size: 4rem; margin-bottom: 15px;">{{ word.emoji }}</div>
+        <div style="
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        ">{{ word.word }}</div>
+        <div style="color: #999; font-size: 1rem;">Tap to practice!</div>
+    </a>
+    {% endfor %}
+</div>
+
+<style>
+.word-card:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.word-card.completed {
+    background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+    border: 3px solid #4caf50;
+}
+
+.word-card.completed::after {
+    content: '✓ Done!';
+    position: absolute;
+    bottom: 10px;
+    font-size: 0.9rem;
+    color: #4caf50;
+    font-weight: bold;
+}
+</style>
+
+{% endblock %}

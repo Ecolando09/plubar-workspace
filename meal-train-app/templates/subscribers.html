@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Subscribers - Admin{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h1>👥 Subscribers</h1>
+    <a href="{{ url_for('admin') }}" class="btn btn-secondary">← Back to Admin</a>
+</div>
+
+<div class="card">
+    {% if subscribers %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Subscribed</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in subscribers %}
+                    <tr>
+                        <td>{{ sub.name }}</td>
+                        <td>{{ sub.email }}</td>
+                        <td>
+                            {% if sub.phone %}
+                                {{ sub.phone }}
+                            {% else %}
+                                <span style="color: #888;">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="color: #888; font-size: 0.9rem;">
+                            {{ sub.subscribed_at[:16] }}
+                        </td>
+                        <td>
+                            {% if sub.active %}
+                                <span class="status-badge status-claimed">Active</span>
+                            {% else %}
+                                <span class="status-badge status-cancelled">Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <p style="margin-top: 20px; color: #888;">
+            Total: {{ subscribers|length }} subscriber(s)
+        </p>
+    {% else %}
+        <div class="empty-state">
+            <div class="icon">📭</div>
+            <p>No subscribers yet. Share the subscribe link!</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

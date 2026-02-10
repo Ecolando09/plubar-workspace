@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory - Literacy Quest{% endblock %}
+
+{% block content %}
+<div style="text-align: center;">
+
+<h2 style="color: #ffd700; margin-bottom: 30px; font-size: 2rem;">
+    🎒 Your Inventory
+</h2>
+
+{% if inventory_counts|length == 0 %}
+<div style="
+    background: rgba(0,0,0,0.3);
+    border-radius: 20px;
+    padding: 50px;
+    max-width: 400px;
+    margin: 0 auto;
+">
+    <div style="font-size: 4rem; margin-bottom: 20px;">🎒</div>
+    <p style="color: #88a4c8; margin-bottom: 20px;">Your inventory is empty!</p>
+    <a href="/shop" class="btn btn-small btn-warning">
+        🛒 Visit Shop
+    </a>
+</div>
+
+{% else %}
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; max-width: 600px; margin: 0 auto;">
+    {% for item_id, count in inventory_counts.items() %}
+    <div style="
+        background: rgba(0,0,0,0.3);
+        border-radius: 20px;
+        padding: 25px;
+        position: relative;
+    ">
+        <div style="font-size: 3rem;">{{ items[item_id].emoji }}</div>
+        <h3 style="color: white; margin: 10px 0;">{{ items[item_id].name }}</h3>
+        <p style="color: #88a4c8; font-size: 0.9rem; margin-bottom: 15px;">{{ items[item_id].desc }}</p>
+        
+        <div style="
+            background: rgba(255, 215, 0, 0.3);
+            padding: 8px 20px;
+            border-radius: 15px;
+            display: inline-block;
+            color: #ffd700;
+            font-weight: bold;
+        ">
+            × {{ count }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+</div>
+{% endblock %}

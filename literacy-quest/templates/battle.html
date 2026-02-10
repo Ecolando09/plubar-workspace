@@ -1,0 +1,618 @@
+{% extends "base.html" %}
+
+{% block title %}Battle! - Literacy Quest{% endblock %}
+
+{% block content %}
+<div style="text-align: center;">
+
+{% if not quest_data or not quest_data.character %}
+    <a href="/" class="btn btn-primary">👤 Select Your Hero First!</a>
+
+{% else %}
+    <!-- Battle Arena -->
+    <div style="
+        background: linear-gradient(180deg, #1a1a2e 0%, #2d1b4e 100%);
+        border-radius: 30px;
+        padding: 40px 20px;
+        max-width: 700px;
+        margin: 0 auto 30px;
+        position: relative;
+        overflow: hidden;
+    ">
+        <!-- Boss indicator -->
+        {% if monster.is_boss %}
+        <div id="boss-indicator" style="
+            background: linear-gradient(135deg, #ff6b35, #ffd700);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: pulse 0.5s ease infinite;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        ">
+            👑 MINI-BOSS BATTLE! 👑
+        </div>
+        {% endif %}
+        
+        <!-- Monster -->
+        <div id="monster-area" style="margin-bottom: 20px;">
+            <div style="position: relative; display: inline-block;">
+                <div id="damage-overlay" style="
+                    position: absolute;
+                    top: -30px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    font-size: 2rem;
+                    font-weight: bold;
+                    color: #ff6b6b;
+                    opacity: 0;
+                    pointer-events: none;
+                "></div>
+                <div style="font-size: 8rem; animation: bounce 2s ease infinite;" id="monster-emoji">
+                    {{ monster.emoji }}
+                </div>
+            </div>
+            
+            <h2 style="color: #ff6b6b; margin-bottom: 5px;">{{ monster.name }}</h2>
+            
+            <!-- Progress bar for battle -->
+            <div style="
+                background: rgba(255,255,255,0.1);
+                border-radius: 10px;
+                padding: 8px 15px;
+                display: inline-block;
+                margin-top: 10px;
+            ">
+                <div style="color: #88a4c8; font-size: 0.85rem; margin-bottom: 5px;">
+                    Battle Progress
+                </div>
+                <div style="width: 180px; height: 12px; background: #333; border-radius: 6px; overflow: hidden;">
+                    <div id="battle-progress" style="
+                        width: {{ (1 - monster.hp / monster.max_hp) * 100 }}%;
+                        height: 100%;
+                        background: linear-gradient(90deg, #4ecdc4, #44a08d);
+                        transition: width 0.5s ease;
+                    "></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Monster HP -->
+        <div id="monster-hp-container" style="
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 12px 25px;
+            display: inline-block;
+            margin-bottom: 20px;
+        ">
+            <div style="color: #ff6b6b; font-size: 1rem; margin-bottom: 8px;">
+                ❤️ <span id="monster-hp">{{ monster.hp }}</span>/<span id="monster-max-hp">{{ monster.max_hp }}</span> HP
+            </div>
+            <div style="width: 200px; height: 18px; background: #333; border-radius: 9px; overflow: hidden; border: 2px solid #ff6b6b;">
+                <div id="monster-hp-bar" style="
+                    width: {{ (monster.hp / monster.max_hp * 100)|int }}%;
+                    height: 100%;
+                    background: linear-gradient(90deg, #ff6b6b, #ee5a5a);
+                    transition: width 0.3s ease;
+                "></div>
+            </div>
+        </div>
+        
+        <!-- Streak indicator with fire -->
+        <div id="streak-indicator" style="
+            display: {% if quest_data.streak >= 3 %}block{% else %}none{% endif %};
+            background: linear-gradient(135deg, #ff6b35, #ffd700);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            animation: pulse 0.5s ease infinite;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        ">
+            🔥 <span id="streak-count">{{ quest_data.streak }}</span> STREAK!
+            {% if quest_data.streak >= 5 %}
+            <span style="color: #ff0000;">⚡ CRITICAL!</span>
+            {% endif %}
+        </div>
+        
+        <!-- Critical hit indicator -->
+        <div id="critical-indicator" style="
+            display: none;
+            background: linear-gradient(135deg, #ff006e, #ff006e);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            animation: criticalFlash 0.3s ease infinite;
+            box-shadow: 0 0 30px rgba(255, 0, 110, 0.8);
+        ">
+            💥 CRITICAL HIT! DOUBLE DAMAGE! 💥
+        </div>
+        
+        <!-- Battle divider -->
+        <div style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 25px 0;
+        ">
+            <div style="flex: 1; height: 4px; background: linear-gradient(90deg, transparent, #ffd700, transparent); border-radius: 2px;"></div>
+            <span style="margin: 0 25px; font-size: 2.5rem;">⚔️</span>
+            <div style="flex: 1; height: 4px; background: linear-gradient(90deg, transparent, #ffd700, transparent); border-radius: 2px;"></div>
+        </div>
+        
+        <!-- Player Stats -->
+        <div style="
+            background: rgba(78, 205, 196, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: inline-block;
+            border: 2px solid #4ecdc4;
+        ">
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                <span style="font-size: 3.5rem;">{{ quest_data.character.emoji }}</span>
+                <div style="text-align: left;">
+                    <div style="color: #4ecdc4; font-weight: bold; font-size: 1.2rem;">{{ quest_data.character.name }}</div>
+                    <div style="color: #88a4c8;">Level {{ current_level }}</div>
+                </div>
+                <div style="
+                    margin-left: 15px;
+                    padding: 10px 20px;
+                    background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+                    border-radius: 15px;
+                    font-weight: bold;
+                    font-size: 1.1rem;
+                ">
+                    ❤️ {{ quest_data.hp }}/{{ quest_data.max_hp }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Question -->
+        <div id="question-area" style="
+            background: rgba(255,255,255,0.95);
+            border-radius: 25px;
+            padding: 35px;
+            margin: 30px auto;
+            max-width: 550px;
+            color: #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 4px solid #667eea;
+        ">
+            <h3 style="color: #667eea; font-size: 1.5rem; margin-bottom: 25px; line-height: 1.6;">
+                {{ monster.question.question }}
+            </h3>
+            
+            <div style="display: grid; gap: 15px; max-width: 450px; margin: 0 auto;">
+                {% for option in monster.question.options %}
+                <button onclick="submitAnswer('{{ option }}')" class="answer-btn" style="
+                    width: 100%;
+                    padding: 20px 25px;
+                    border: 4px solid #e0e0e0;
+                    border-radius: 18px;
+                    background: white;
+                    font-size: 1.4rem;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+                    color: #333;
+                " onmouseover="this.style.borderColor='#667eea';this.style.transform='scale(1.02)';"
+                onmouseout="this.style.borderColor='#e0e0e0';this.style.transform='scale(1)';">
+                    {{ option }}
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 25px;">
+            <button onclick="useSpecial()" class="btn btn-small btn-success" style="font-size: 1.1rem; padding: 12px 25px;">
+                ✨ {{ quest_data.character.special }}
+            </button>
+            <button onclick="retreat()" class="btn btn-small" style="
+                background: rgba(255,255,255,0.1);
+                color: #88a4c8;
+                border: 2px solid #88a4c8;
+                font-size: 1.1rem;
+                padding: 12px 25px;
+            ">
+                🏃 Retreat
+            </button>
+        </div>
+        
+        <!-- Feedback -->
+        <div id="feedback" style="
+            margin-top: 25px;
+            padding: 18px 35px;
+            border-radius: 20px;
+            display: none;
+            font-size: 1.3rem;
+            font-weight: bold;
+        "></div>
+        
+        <!-- Damage number popup -->
+        <div id="damage-popup" style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 0 #000;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 100;
+        "></div>
+    </div>
+    
+    <!-- Achievement Popup (hidden by default) -->
+    <div id="achievement-popup" style="
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #ffd700, #ff6b35);
+        color: white;
+        padding: 30px 50px;
+        border-radius: 25px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        z-index: 1000;
+        box-shadow: 0 10px 50px rgba(255, 215, 0, 0.5);
+        animation: achievementPop 0.5s ease;
+        text-align: center;
+    ">
+        <div id="achievement-icon" style="font-size: 4rem; margin-bottom: 15px;"></div>
+        <div id="achievement-name" style="font-size: 1.8rem; margin-bottom: 10px;"></div>
+        <div id="achievement-desc" style="font-size: 1.1rem; opacity: 0.9;"></div>
+    </div>
+    
+    <!-- Monster Defeated Celebration -->
+    <div id="celebration-overlay" style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.8);
+        z-index: 999;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    ">
+        <div id="celebration-text" style="
+            font-size: 4rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+            animation: celebrationBounce 0.5s ease infinite;
+            margin-bottom: 30px;
+        "></div>
+        <div id="celebration-emoji" style="font-size: 8rem; margin-bottom: 30px;"></div>
+        <div id="celebration-reward" style="
+            background: rgba(255,255,255,0.1);
+            padding: 20px 40px;
+            border-radius: 20px;
+            color: white;
+            font-size: 1.5rem;
+        "></div>
+    </div>
+    
+    <!-- Battle Tips -->
+    <div style="
+        background: rgba(255,255,255,0.05);
+        border-radius: 15px;
+        padding: 20px;
+        max-width: 500px;
+        margin: 0 auto;
+    ">
+        <p style="color: #88a4c8; font-size: 1rem;">
+            💡 Answer correctly to damage the monster! Build streaks for bonus XP and damage! 🔥
+        </p>
+    </div>
+    
+    <script>
+        let answering = false;
+        
+        // Play sound effects (visual feedback only for now)
+        function playSound(type) {
+            // Could add Web Audio API sounds here
+            console.log('Sound: ' + type);
+        }
+        
+        // Show damage popup animation
+        function showDamagePopup(damage, isCritical) {
+            const popup = document.getElementById('damage-popup');
+            popup.textContent = '-' + damage;
+            popup.style.color = isCritical ? '#ff006e' : '#ff6b6b';
+            popup.style.fontSize = isCritical ? '4rem' : '3rem';
+            popup.style.animation = 'damageFloat 1s ease forwards';
+            popup.style.opacity = '1';
+            
+            setTimeout(() => {
+                popup.style.opacity = '0';
+            }, 1000);
+        }
+        
+        // Shake animation for wrong answer
+        function shakeElement(elementId) {
+            const element = document.getElementById(elementId);
+            element.style.animation = 'none';
+            setTimeout(() => {
+                element.style.animation = 'shake 0.5s ease';
+            }, 10);
+        }
+        
+        // Flash animation for correct answer
+        function flashQuestion() {
+            const question = document.getElementById('question-area');
+            question.style.animation = 'none';
+            question.style.boxShadow = '0 0 30px #4ecdc4';
+            setTimeout(() => {
+                question.style.animation = 'flashGreen 0.3s ease';
+                question.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
+            }, 50);
+        }
+        
+        // Monster hit animation
+        function monsterHitAnimation() {
+            const monster = document.getElementById('monster-emoji');
+            monster.style.animation = 'none';
+            monster.style.transform = 'scale(0.8)';
+            setTimeout(() => {
+                monster.style.transform = 'scale(1)';
+                monster.style.animation = 'bounce 2s ease infinite';
+            }, 200);
+        }
+        
+        async function submitAnswer(answer) {
+            if (answering) return;
+            answering = true;
+            
+            const btns = document.querySelectorAll('.answer-btn');
+            btns.forEach(b => {
+                b.disabled = true;
+                b.style.opacity = '0.5';
+            });
+            
+            try {
+                const response = await fetch('/api/answer', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({answer: answer})
+                });
+                
+                const data = await response.json();
+                const feedback = document.getElementById('feedback');
+                
+                if (data.correct) {
+                    // Show damage popup
+                    showDamagePopup(data.damage, data.critical || false);
+                    
+                    // Monster hit animation
+                    monsterHitAnimation();
+                    
+                    // Flash question area green
+                    flashQuestion();
+                    
+                    feedback.style.display = 'block';
+                    feedback.style.background = 'rgba(78, 205, 196, 0.3)';
+                    feedback.style.color = '#4ecdc4';
+                    feedback.innerHTML = '🎯 ' + data.message;
+                    
+                    // Update HP bar
+                    if (data.monster_hp !== undefined) {
+                        document.getElementById('monster-hp').textContent = data.monster_hp;
+                        const hpPercent = (data.monster_hp / parseInt(document.getElementById('monster-max-hp').textContent)) * 100;
+                        document.getElementById('monster-hp-bar').style.width = hpPercent + '%';
+                        document.getElementById('battle-progress').style.width = (100 - hpPercent) + '%';
+                    }
+                    
+                    // Update streak
+                    if (data.streak >= 3) {
+                        document.getElementById('streak-indicator').style.display = 'block';
+                        document.getElementById('streak-count').textContent = data.streak;
+                    }
+                    
+                    // Show critical indicator
+                    if (data.critical) {
+                        document.getElementById('critical-indicator').style.display = 'block';
+                        setTimeout(() => {
+                            document.getElementById('critical-indicator').style.display = 'none';
+                        }, 2000);
+                    }
+                    
+                    if (data.monster_defeated) {
+                        // Big celebration!
+                        document.getElementById('monster-emoji').style.animation = 'none';
+                        document.getElementById('monster-emoji').style.transform = 'scale(0)';
+                        
+                        setTimeout(() => {
+                            document.getElementById('monster-emoji').textContent = '💥';
+                            document.getElementById('monster-emoji').style.transform = 'scale(1)';
+                            showCelebration();
+                        }, 300);
+                        
+                        // Show celebration overlay
+                        setTimeout(() => {
+                            const celebration = document.getElementById('celebration-overlay');
+                            celebration.style.display = 'flex';
+                            document.getElementById('celebration-text').textContent = data.celebration || '🎉 MONSTER DEFEATED!';
+                            document.getElementById('celebration-emoji').textContent = data.is_boss ? '👑🏆👑' : '⭐🎉⭐';
+                            document.getElementById('celebration-reward').innerHTML = 
+                                `💰 +${data.gold_found} Gold! <br> ⭐ +${data.xp_gain} XP!` +
+                                (data.leveled_up ? `<br>🎊 LEVEL ${data.new_level}!` : '');
+                            
+                            // Fire confetti!
+                            createConfetti();
+                            createConfetti();
+                            createConfetti();
+                        }, 500);
+                        
+                        // Show achievements
+                        if (data.new_achievements && data.new_achievements.length > 0) {
+                            setTimeout(() => {
+                                showAchievement(data.new_achievements[0]);
+                            }, 2000);
+                        }
+                        
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 4000);
+                    } else {
+                        // Monster still alive - reload for new question!
+                        setTimeout(() => window.location.reload(), 1200);
+                    }
+                } else {
+                    // Wrong answer - shake the question
+                    shakeElement('question-area');
+                    shakeElement('monster-emoji');
+                    
+                    feedback.style.display = 'block';
+                    feedback.style.background = 'rgba(255, 107, 107, 0.3)';
+                    feedback.style.color = '#ff6b6b';
+                    feedback.innerHTML = '💥 ' + data.message;
+                    
+                    // Hide streak indicator
+                    document.getElementById('streak-indicator').style.display = 'none';
+                    
+                    if (data.defeated) {
+                        setTimeout(() => {
+                            alert('😢 You were defeated! Try again!');
+                            window.location.href = '/';
+                        }, 1500);
+                    } else {
+                        // Wrong answer - reload for new question!
+                        setTimeout(() => window.location.reload(), 1200);
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+                answering = false;
+                btns.forEach(b => {
+                    b.disabled = false;
+                    b.style.opacity = '1';
+                });
+            }
+        }
+        
+        async function retreat() {
+            if (!confirm('Retreat from battle? Your progress will be saved.')) return;
+            
+            await fetch('/api/retreat', {method: 'POST'});
+            window.location.href = '/';
+        }
+        
+        async function useSpecial() {
+            const response = await fetch('/api/use-special', {method: 'POST'});
+            const data = await response.json();
+            
+            const feedback = document.getElementById('feedback');
+            feedback.style.display = 'block';
+            feedback.style.background = 'rgba(255, 215, 0, 0.3)';
+            feedback.style.color = '#ffd700';
+            feedback.innerHTML = '✨ ' + data.message;
+        }
+        
+        // Enhanced confetti
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#ffd700', '#4ecdc4', '#44a08d', '#ff6bd6', '#ff006e', '#8338ec', '#3a86ff'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.width = (Math.random() * 12 + 8) + 'px';
+                    confetti.style.height = confetti.style.width;
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 30);
+            }
+        }
+        
+        function showCelebration() {
+            createConfetti();
+        }
+        
+        function showAchievement(achievement) {
+            const popup = document.getElementById('achievement-popup');
+            document.getElementById('achievement-icon').textContent = achievement.icon;
+            document.getElementById('achievement-name').textContent = achievement.name;
+            document.getElementById('achievement-desc').textContent = achievement.description;
+            popup.style.display = 'block';
+            
+            // Fire achievement confetti!
+            createConfetti();
+            createConfetti();
+            
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+    
+    <style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        
+        @keyframes flashGreen {
+            0%, 100% { background: rgba(255,255,255,0.95); }
+            50% { background: rgba(78, 205, 196, 0.5); }
+        }
+        
+        @keyframes damageFloat {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+            50% { transform: translate(-50%, -100%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -150%) scale(1); opacity: 0; }
+        }
+        
+        @keyframes criticalFlash {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes achievementPop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        @keyframes celebrationBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            animation: fall 3s ease-out forwards;
+        }
+        
+        @keyframes fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+{% endif %}
+
+</div>
+{% endblock %}

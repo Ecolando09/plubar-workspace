@@ -1,0 +1,322 @@
+# Literacy Quest - Configuration
+
+# App Settings
+app:
+  host: "0.0.0.0"
+  port: 5003
+  debug: false
+
+# Site Configuration
+site:
+  name: "Literacy Quest"
+  url: http://localhost:5003
+
+# Kid Profile
+kid:
+  name: "Jade"
+  age: 6
+
+# Character Classes
+characters:
+  - id: "librarian"
+    name: "The Librarian"
+    emoji: "📚"
+    description: "High Defense - Can shield from wrong answers"
+    special: "Shield"
+    special_desc: "Block one wrong answer"
+    color: "#2196f3"
+    
+  - id: "poet"
+    name: "The Poet"  
+    emoji: "✍️"
+    description: "High Critical - Double XP on perfect answers"
+    special: "Poet's Touch"
+    special_desc: "Double XP on perfect answers"
+    color: "#e91e63"
+    
+  - id: "chronicler"
+    name: "The Chronicler"
+    emoji: "📜"
+    description: "Healer - Restore health with combo answers"
+    special: "Story Shield"
+    special_desc: "Restore HP by chaining correct answers"
+    color: "#4caf50"
+
+# Monsters (reading challenges)
+monsters:
+  - id: "word-eater"
+    name: "Word Eater"
+    emoji: "👾"
+    description: "A monster that eats words!"
+    hp: 10
+    questions:
+      - level: 1
+        question: "Which word rhymes with CAT?"
+        options: ["DOG", "HAT", "BOOK", "CAR"]
+        answer: "HAT"
+        
+      - level: 1
+        question: "Find the word that starts with S"
+        options: ["Sun", "Cat", "Dog", "Pig"]
+        answer: "Sun"
+        
+      - level: 1
+        question: "What is the opposite of BIG?"
+        options: ["Tall", "Small", "Red", "Fast"]
+        answer: "Small"
+        
+      - level: 2
+        question: "Which is a verb?"
+        options: ["Run", "Blue", "Happy", "Table"]
+        answer: "Run"
+        
+      - level: 2
+        question: "Find the compound word"
+        options: ["Sunshine", "Cat", "Jump", "Book"]
+        answer: "Sunshine"
+        
+  - id: "grammar-goblin"
+    name: "Grammar Goblin"
+    emoji: "👺"
+    description: "He twists sentences!"
+    hp: 15
+    questions:
+      - level: 1
+        question: "Which sentence is correct?"
+        options: ["The cat run", "The cat runs", "The cat running", "Cat run fast"]
+        answer: "The cat runs"
+        
+      - level: 1
+        question: "Pick the proper noun"
+        options: ["Dog", "Cat", "Jade", "School"]
+        answer: "Jade"
+        
+      - level: 2
+        question: "What is a pronoun?"
+        options: ["She", "Run", "Blue", "Quick"]
+        answer: "She"
+        
+      - level: 2
+        question: "Which is past tense?"
+        options: ["Walk", "Walking", "Walked", "Will walk"]
+        answer: "Walked"
+
+  # NEW MONSTERS FOR KIDS!
+  - id: "letter-lizard"
+    name: "Letter Lizard"
+    emoji: "🦎"
+    description: "He loves to play with letters!"
+    hp: 8
+    is_mini_boss: false
+    
+  - id: "rhyme-rabbit"
+    name: "Rhyme Rabbit"
+    emoji: "🐰"
+    description: "Hops around making silly rhymes!"
+    hp: 10
+    is_mini_boss: false
+    
+  - id: "spelling-spider"
+    name: "Spelling Spider"
+    emoji: "🕷️"
+    description: "Spins words into webs!"
+    hp: 12
+    is_mini_boss: false
+    
+  - id: "sentence-snake"
+    name: "Sentence Snake"
+    emoji: "🐍"
+    description: "Slithers around confusing sentences!"
+    hp: 15
+    is_mini_boss: false
+    
+  - id: "reading-rainbow"
+    name: "Reading Rainbow"
+    emoji: "🌈"
+    description: "A colorful reading friend!"
+    hp: 20
+    is_mini_boss: true
+    boss_emoji: "🦄"
+    
+  - id: "vocabulary-vampire"
+    name: "Vocabulary Vampire"
+    emoji: "🧛"
+    description: "Sucks up big words!"
+    hp: 18
+    is_mini_boss: false
+    
+  - id: "punctuation-pirate"
+    name: "Punctuation Pirate"
+    emoji: "🏴‍☠️"
+    description: "Steals your commas!"
+    hp: 20
+    is_mini_boss: true
+    boss_emoji: "👑"
+    
+  - id: "story-storm"
+    name: "Story Storm"
+    emoji: "⛈️"
+    description: "A whirlwind of stories!"
+    hp: 25
+    is_mini_boss: true
+    boss_emoji: "🐉"
+
+# Achievements System
+achievements:
+  - id: "first_monster"
+    name: "🏆 First Victory!"
+    description: "Defeat your first monster!"
+    icon: "👾"
+    
+  - id: "ten_correct"
+    name: "🌟 Super Star!"
+    description: "Answer 10 questions correctly!"
+    icon: "⭐"
+    
+  - id: "first_level_up"
+    name: "📈 Level Up!"
+    description: "Reach Level 2!"
+    icon: "🎉"
+    
+  - id: "streak_five"
+    name: "🔥 On Fire!"
+    description: "Get a 5 streak!"
+    icon: "🔥"
+    
+  - id: "streak_ten"
+    name: "💥 Unstoppable!"
+    description: "Get a 10 streak!"
+    icon: "💥"
+    
+  - id: "five_monsters"
+    name: "⚔️ Monster Hunter!"
+    description: "Defeat 5 monsters!"
+    icon: "🗡️"
+    
+  - id: "twenty_correct"
+    name: "🧠 Brain Power!"
+    description: "Answer 20 questions correctly!"
+    icon: "🧠"
+    
+  - id: "three_streak"
+    name: "🔥 Heating Up!"
+    description: "Get a 3 streak!"
+    icon: "🔥"
+
+# Encouragement Messages for Kids
+encouragements:
+  correct:
+    - "🌟 Amazing! You got it!"
+    - "🎉 Fantastic job!"
+    - "⭐ You're so smart!"
+    - "🚀 Great thinking!"
+    - "💪 Keep it up!"
+    - "🏆 Awesome!"
+    - "🌈 Super duper!"
+    
+  streak:
+    - "🔥 You're on fire!"
+    - "💥 Streak power!"
+    - "⚡ Super streak!"
+    - "🎯 Perfect!"
+    
+  critical:
+    - "💥 CRITICAL HIT!"
+    - "⚡ DOUBLE DAMAGE!"
+    - "🌟 ULTIMATE ATTACK!"
+    - "🔥 MAXIMUM POWER!"
+    
+  defeated:
+    - "🎉 MONSTER DEFEATED!"
+    - "🏆 YOU WIN!"
+    - "⭐ GREAT JOB!"
+    - "🎊 AMAZING!"
+
+# Reading Questions by Level
+questions:
+  level_1:
+    - question: "What letter does APPLE start with?"
+      options: ["A", "B", "C", "D"]
+      answer: "A"
+      
+    - question: "Find the word that ends with T"
+      options: ["Cat", "Dog", "Pig", "Sun"]
+      answer: "Cat"
+      
+    - question: "Which is NOT an animal?"
+      options: ["Dog", "Cat", "Ball", "Bird"]
+      answer: "Ball"
+      
+    - question: "Find the color word"
+      options: ["Run", "Blue", "Jump", "Fast"]
+      answer: "Blue"
+      
+    - question: "What is 2 words put together?"
+      options: ["Sunshine", "Cat", "Jump", "Book"]
+      answer: "Sunshine"
+      
+    - question: "Which word is a name?"
+      options: ["He", "She", "Jade", "It"]
+      answer: "Jade"
+      
+    - question: "Find the action word"
+      options: ["Jump", "Red", "Big", "The"]
+      answer: "Jump"
+      
+    - question: "What is the middle letter in CAT?"
+      options: ["C", "A", "T", "X"]
+      answer: "A"
+      
+    - question: "Which word rhymes with FUN?"
+      options: ["Sun", "Cat", "Pig", "Hat"]
+      answer: "Sun"
+      
+    - question: "Pick the describing word"
+      options: ["Happy", "Run", "The", "And"]
+      answer: "Happy"
+      
+  level_2:
+    - question: "Which is a complete sentence?"
+      options: ["The cat", "The cat runs", "And", "The"]
+      answer: "The cat runs"
+      
+    - question: "Find the antonym of HOT"
+      options: ["Cold", "Warm", "Sun", "Fire"]
+      answer: "Cold"
+      
+    - question: "What is a noun?"
+      options: ["Apple", "Jump", "Quickly", "Is"]
+      answer: "Apple"
+      
+    - question: "Which word has BL at the start?"
+      options: ["Blue", "Fly", "Sky", "Play"]
+      answer: "Blue"
+      
+    - question: "Find the suffix in RUNNING"
+      options: ["RUN", "NING", "ING", "RUNN"]
+      answer: "ING"
+      
+    - question: "What is a synonym for HAPPY?"
+      options: ["Sad", "Joyful", "Tired", "Mad"]
+      answer: "Joyful"
+      
+    - question: "Which sentence has a comma?"
+      options: ["I like cats.", "I like cats and dogs.", "Cats!", "I"]
+      answer: "I like cats and dogs."
+      
+  level_3:
+    - question: "What is the MAIN IDEA of a story?"
+      options: ["The best part", "The biggest message", "The last page", "The author's name"]
+      answer: "The biggest message"
+      
+    - question: "Find the PREFIX in UNHAPPY"
+      options: ["HAPPY", "UN", "PY", "UNHAP"]
+      answer: "UN"
+      
+    - question: "What is an INFERENCE?"
+      options: ["A guess using clues", "The title", "The first word", "A spelling test"]
+      answer: "A guess using clues"
+      
+    - question: "Find the SIMILE"
+      options: ["She is nice.", "She is as fast as a cheetah.", "The big dog.", "The cat."]
+      answer: "She is as fast as a cheetah."

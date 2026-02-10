@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Story Library - Bedtime Stories</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #54a0ff, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            text-align: center;
+            color: #a0a0a0;
+            margin-bottom: 40px;
+        }
+        .stories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .story-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .story-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+        .story-card h3 {
+            color: #feca57;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        .story-meta {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+        .age-badge {
+            background: rgba(84, 160, 255, 0.3);
+        }
+        .voice-badge {
+            background: rgba(255, 107, 107, 0.3);
+        }
+        .story-preview {
+            color: #c0c0c0;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .story-values {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .value-tag {
+            background: rgba(254, 202, 87, 0.2);
+            color: #feca57;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+        .story-date {
+            color: #808080;
+            font-size: 0.85em;
+            margin-bottom: 15px;
+        }
+        .story-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: linear-gradient(45deg, #54a0ff, #2e86de);
+            color: #fff;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+        }
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0a0a0;
+        }
+        .empty-state h3 {
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        .btn-back {
+            margin-bottom: 30px;
+        }
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+        .star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        @media (max-width: 600px) {
+            .stories-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <h1>📚 My Story Library 🌟</h1>
+        <p class="subtitle">All your favorite bedtime stories</p>
+        
+        <a href="/" class="btn btn-back btn-outline">← Create New Story</a>
+        
+        {% if stories|length == 0 %}
+        <div class="empty-state">
+            <h3>No stories yet! ✨</h3>
+            <p>Create your first magical bedtime story.</p>
+            <br>
+            <a href="/" class="btn btn-primary">✨ Create Story</a>
+        </div>
+        {% else %}
+        <div class="stories-grid">
+            {% for story in stories %}
+            <div class="story-card">
+                <h3>{{ story.title }}</h3>
+                <div class="story-meta">
+                    <span class="badge age-badge">👶 {{ story.age_group }} years</span>
+                    <span class="badge voice-badge">🎙️ {{ story.voice|capitalize }}</span>
+                </div>
+                <div class="story-values">
+                    {% for value in story.values %}
+                    <span class="value-tag">{{ value }}</span>
+                    {% endfor %}
+                </div>
+                <div class="story-preview">{{ story.content }}</div>
+                <div class="story-date">📅 {{ story.created_at[:10] }}</div>
+                <div class="story-actions">
+                    <a href="/story/{{ story.id }}" class="btn btn-secondary">📖 Read</a>
+                    <button class="btn btn-primary" onclick="deleteStory('{{ story.id }}')">🗑️ Delete</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <script>
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        function deleteStory(id) {
+            if (confirm('Delete this story?')) {
+                fetch(`/delete/${id}`, { method: 'POST' })
+                    .then(() => window.location.reload());
+            }
+        }
+        
+        createStars();
+    </script>
+</body>
+</html>

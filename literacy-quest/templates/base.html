@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Literacy Quest{% endblock %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 25px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 4px solid #ffd700;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,215,0,0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        header h1 {
+            font-size: 2.8rem;
+            color: #ffd700;
+            text-shadow: 3px 3px 0 #ff6b35;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        header p {
+            color: #88a4c8;
+            font-size: 1.1rem;
+            position: relative;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            position: relative;
+        }
+        
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.12);
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        
+        .stat:hover {
+            transform: translateY(-3px);
+            border-color: #ffd700;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
+        }
+        
+        .stat-icon {
+            font-size: 1.6rem;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .hp-bar {
+            width: 130px;
+            height: 22px;
+            background: #333;
+            border-radius: 11px;
+            overflow: hidden;
+            border: 2px solid #ff6b6b;
+        }
+        
+        .hp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ee5a5a);
+            transition: width 0.4s ease;
+        }
+        
+        .xp-bar {
+            width: 160px;
+            height: 22px;
+            background: #333;
+            border-radius: 11px;
+            overflow: hidden;
+            border: 2px solid #ffd700;
+        }
+        
+        .xp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #44a08d);
+            transition: width 0.4s ease;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 30px rgba(78, 205, 196, 0.4);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ffd700, #ff6b35);
+            color: #1a1a2e;
+        }
+        
+        .btn-warning:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: white;
+        }
+        
+        .btn-small {
+            padding: 12px 22px;
+            font-size: 1.05rem;
+        }
+        
+        .main-nav {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: rgba(255,255,255,0.5);
+            font-size: 1rem;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+        }
+        
+        .bounce { animation: bounce 1.5s ease infinite; }
+        .shake { animation: shake 0.5s ease; }
+        .pulse { animation: pulse 1.5s ease infinite; }
+        .float { animation: float 3s ease-in-out infinite; }
+        .glow { animation: glow 2s ease-in-out infinite; }
+        
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            animation: confettiFall 4s ease-out forwards;
+        }
+        
+        @keyframes confettiFall {
+            0% { 
+                transform: translateY(-100vh) rotate(0deg); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: translateY(100vh) rotate(720deg); 
+                opacity: 0; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📚 Literacy Quest</h1>
+        <p style="color: #88a4c8;">An Epic Reading Adventure for Kids!</p>
+        
+        {% if quest_data and quest_data.character %}
+        <div class="stats-bar">
+            <div class="stat bounce">
+                <span class="stat-icon">{{ quest_data.character.emoji }}</span>
+                <span>{{ quest_data.character.name }}</span>
+            </div>
+            
+            <div class="stat">
+                <span class="stat-icon">❤️</span>
+                <div class="hp-bar">
+                    <div class="hp-fill" style="width: {{ (quest_data.hp / quest_data.max_hp * 100)|int }}%"></div>
+                </div>
+                <span class="stat-value">{{ quest_data.hp }}/{{ quest_data.max_hp }}</span>
+            </div>
+            
+            <div class="stat">
+                <span class="stat-icon">⭐</span>
+                <span class="stat-value">{{ quest_data.xp }}</span>
+            </div>
+            
+            <div class="stat">
+                <span class="stat-icon">🪙</span>
+                <span class="stat-value">{{ quest_data.gold }}</span>
+            </div>
+            
+            <div class="stat">
+                <span class="stat-icon">🔥</span>
+                <span class="stat-value">{{ quest_data.best_streak }}</span>
+            </div>
+        </div>
+        {% endif %}
+    </header>
+    
+    {% if quest_data and quest_data.character %}
+    <nav class="main-nav">
+        <a href="/" class="btn btn-small btn-primary">🗺️ Map</a>
+        <a href="/battle" class="btn btn-small btn-warning">⚔️ Battle</a>
+        <a href="/shop" class="btn btn-small btn-success">🛒 Shop</a>
+        <a href="/inventory" class="btn btn-small btn-primary">🎒 Items</a>
+        <a href="/stats" class="btn btn-small btn-primary">📊 Stats</a>
+    </nav>
+    {% endif %}
+    
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer>
+        <p>Made with ❤️ for young readers!</p>
+    </footer>
+    
+    <script>
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#ffd700', '#4ecdc4', '#44a08d', '#ff6bd6', '#ff006e', '#8338ec', '#3a86ff'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.width = (Math.random() * 12 + 8) + 'px';
+                    confetti.style.height = confetti.style.width;
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.animationDuration = (Math.random() * 2 + 3) + 's';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 5000);
+                }, i * 30);
+            }
+        }
+        
+        function showCelebration() {
+            createConfetti();
+        }
+    </script>
+</body>
+</html>

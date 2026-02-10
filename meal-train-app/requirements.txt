@@ -1,0 +1,12 @@
+# Flask
+Flask==3.0.0
+Werkzeug==3.0.1
+
+# Database
+SQLAlchemy==2.0.23
+
+# Email
+PyYAML==6.0.1
+
+# For development (optional)
+python-dotenv==1.0.0

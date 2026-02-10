@@ -1,0 +1,32 @@
+app:
+  host: 0.0.0.0
+  port: 5002
+  debug: false
+  upload_folder: /root/.openclaw/workspace/meal-train-app/uploads
+  secret_key: meal-train-secret-rainbow
+
+email:
+  sender_email: landon.gennetten@gmail.com
+  sender_name: Diana's Meal Train
+  sender_password: jowyzwbkfhdeaotu
+  smtp_server: smtp.gmail.com
+  smtp_port: 587
+  use_tls: true
+
+# Admin credentials
+admin:
+  password: rainbow
+
+# Parents who receive notifications
+parents:
+  - email: landon.gennetten@gmail.com
+    name: Landon
+  - email: Kelley.atlas@gmail.com
+    name: Kelley
+
+# Venmo configuration
+venmo:
+  url: https://venmo.com/?txn=pay&audience=public&recipients=Landon-Atlas&amount=25&note=Atlas-Family-Meal-Train
+
+# Database
+database: /root/.openclaw/workspace/meal-train-app/database.json

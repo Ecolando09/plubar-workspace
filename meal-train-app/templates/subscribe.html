@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Join the Meal Train{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 0 auto;">
+    <h2>🚂 Join the Meal Train</h2>
+    <p style="margin-bottom: 25px;">
+        Get notified when we need dinner! You'll receive an email 
+        when the Meal Train is triggered. First to claim brings the meal!
+    </p>
+    
+    <form method="POST">
+        <div class="form-group">
+            <label for="name">Your Name *</label>
+            <input type="text" id="name" name="name" required 
+                   placeholder="Jane Smith" autofocus>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input type="email" id="email" name="email" required 
+                   placeholder="jane@example.com">
+        </div>
+        
+        <div class="form-group">
+            <label for="phone">Phone Number (optional)</label>
+            <input type="tel" id="phone" name="phone" 
+                   placeholder="+1 (555) 123-4567">
+            <small style="color: #888; margin-top: 5px; display: block;">
+                We'll only text if email doesn't work
+            </small>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+            🚂 All Aboard!
+        </button>
+    </form>
+    
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e8f5e9;">
+        <p style="color: #789060; font-size: 0.9rem;">
+            ✨ <strong>How it works:</strong><br>
+            1. You sign up with your email<br>
+            2. When we need dinner, you get an email<br>
+            3. First person to click "I'll bring dinner!" wins!<br>
+            4. No scheduling, no remembering dates, no hassle
+        </p>
+    </div>
+</div>
+{% endblock %}

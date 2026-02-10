@@ -1,0 +1,17 @@
+venv/
+*.pyc
+__pycache__
+.env
+# Large files
+*.onnx
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# Generated audio
+piper-tts/**/*.wav
+
+# Uploads
+family-journal/uploads/*
+!family-journal/uploads/.gitkeep

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 400px; margin: 0 auto;">
+    <h2 style="text-align: center; color: #558b2f;">🔐 Admin Access</h2>
+    
+    <form method="POST">
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required 
+                   placeholder="Enter password" autofocus>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+            Login
+        </button>
+    </form>
+</div>
+{% endblock %}

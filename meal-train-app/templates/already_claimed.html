@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Already Claimed - Bat Signal{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 0 auto; text-align: center;">
+    <div style="font-size: 5rem; margin-bottom: 20px;">😢</div>
+    <h2 style="margin-bottom: 20px;">Sorry, it's already claimed!</h2>
+    
+    <p style="color: #aaa; font-size: 1.1rem; margin-bottom: 30px;">
+        Someone else already picked up this meal. 
+        You'll be first for the next Bat Signal!
+    </p>
+    
+    <div style="background: rgba(243, 156, 18, 0.1); padding: 25px; border-radius: 12px; margin: 20px 0;">
+        <p style="color: #f39c12; margin-bottom: 15px;">
+            💡 <strong>In the meantime:</strong>
+        </p>
+        <p style="color: #ddd;">
+            Keep an eye on your inbox for the next meal request!<br>
+            Follow us on social media?<br>
+            Just reply to any email if you have questions.
+        </p>
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">← Back to Home</a>
+    </div>
+</div>
+{% endblock %}

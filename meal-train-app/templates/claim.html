@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Claim Tab - Meal Train{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <div style="font-size: 4rem; margin-bottom: 15px;">💰</div>
+        <h2>💰 I'll claim tab</h2>
+    </div>
+    
+    <div class="meal-details">
+        <h3>📋 Meal Details</h3>
+        <div class="detail">
+            <span class="detail-label">Restaurant:</span>
+            <span class="detail-value">{{ meal_request.restaurant }}</span>
+        </div>
+        <div class="detail">
+            <span class="detail-label">Amount:</span>
+            <span class="detail-value">{{ meal_request.amount }}</span>
+        </div>
+    </div>
+    
+    <form method="POST" action="{{ url_for('confirm_claim', request_id=meal_request.id) }}">
+        <div class="form-group">
+            <label for="email">Your Email Address *</label>
+            <input type="email" id="email" name="email" required 
+                   placeholder="jane@example.com" autofocus>
+        </div>
+        
+        <div class="form-group">
+            <label>How will you pay?</label>
+            
+            <div class="payment-options">
+                <label class="payment-option" onclick="selectPayment(this)">
+                    <input type="radio" name="claim_method" value="venmo" required>
+                    <div class="icon">💰</div>
+                    <h3>Venmo</h3>
+                    <p>I'll Venmo for the cost</p>
+                    <div class="venmo-link">venmo.com/code?user_id=1258231112400896333</div>
+                </label>
+                
+                <label class="payment-option" onclick="selectPayment(this)">
+                    <input type="radio" name="claim_method" value="own_payment" required>
+                    <div class="icon">💳</div>
+                    <h3>My Payment</h3>
+                    <p>I will organize my own payment method</p>
+                </label>
+            </div>
+        </div>
+        
+        <div class="warning-box">
+            <p>⚠️ First to submit claims it! Make sure your email is correct.<br><br>
+            Your email will be removed from the list after you claim a meal.</p>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 16px;">
+            💰 Claim This Tab!
+        </button>
+    </form>
+    
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">← Back to Home</a>
+    </div>
+</div>
+
+<script>
+function selectPayment(element) {
+    document.querySelectorAll('.payment-option').forEach(el => {
+        el.classList.remove('selected');
+    });
+    element.classList.add('selected');
+}
+</script>
+{% endblock %}

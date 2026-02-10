@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>📖 Family Journal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+/* 🎨 Design System v1.0 */
+:root {
+  --color-primary: #667eea; --color-primary-dark: #5a67d8;
+  --color-secondary: #764ba2; --color-success: #48bb78;
+  --color-success-light: #c6f6d5; --color-error: #f56565;
+  --color-error-light: #fed7d7; --color-info: #4299e1;
+  --color-info-light: #bee3f8; --color-text-primary: #1a202c;
+  --color-text-secondary: #4a5568; --color-text-muted: #718096;
+  --color-background: #f7fafc; --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --space-xs:4px; --space-sm:8px; --space-md:16px; --space-lg:24px; --space-xl:32px; --space-2xl:48px;
+  --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-xl:24px; --radius-full:9999px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md:0 4px 12px rgba(0,0,0,0.1); --shadow-lg:0 8px 24px rgba(0,0,0,0.12);
+  --transition-fast:150ms cubic-bezier(0.2,0,0,1);
+  --transition-normal:250ms cubic-bezier(0.4,0,0.2,1);
+  --container-max:600px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased}
+body{
+  font:400 16px/1.6 var(--font-family,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto);
+  color:var(--color-text-primary);
+  background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));
+  min-height:100vh;padding:var(--space-md)
+}
+.container{max-width:var(--container-max);margin:0 auto;background:var(--color-surface);
+  border-radius:var(--radius-xl);padding:var(--space-xl);
+  box-shadow:var(--shadow-lg)}
+h1{font:700 32px/1.2 Nunito,var(--font-family);color:var(--color-text-primary);
+  margin-bottom:var(--space-lg);text-align:center}
+h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
+  margin-bottom:var(--space-md)}
+.section{margin-bottom:var(--space-xl)}
+.label{font:500 12px/1.4 var(--font-family);color:var(--color-text-muted);
+  text-transform:uppercase;letter-spacing:0.5px;margin-bottom:var(--space-xs);display:block}
+.input,.textarea,select{width:100%;padding:14px var(--space-md);
+  font:400 16px var(--font-family);color:var(--color-text-primary);
+  background:var(--color-surface);border:2px solid var(--color-border);
+  border-radius:var(--radius-md);transition:border-color var(--transition-fast),box-shadow var(--transition-fast);
+  -webkit-appearance:none}
+.input:focus,.textarea:focus,select:focus{outline:none;border-color:var(--color-primary);
+  box-shadow:0 0 0 3px rgba(102,126,234,0.2)}
+.textarea{min-height:120px;resize:vertical}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-sm);
+  padding:14px var(--space-lg);font:600 18px/1 var(--font-family);border:none;
+  border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition-normal);
+  min-height:56px;-webkit-tap-highlight-color:transparent}
+.btn-primary{background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));
+  color:white;box-shadow:var(--shadow-sm)}
+.btn-primary:hover{transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(102,126,234,0.4)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.btn-full{width:100%}
+.checkbox-group{display:flex;flex-wrap:wrap;gap:var(--space-md)}
+.checkbox-label{display:flex;align-items:center;gap:var(--space-sm);
+  padding:var(--space-md) var(--space-lg);background:var(--color-background);
+  border:2px solid var(--color-border);border-radius:var(--radius-md);
+  cursor:pointer;transition:all var(--transition-fast);min-height:56px}
+.checkbox-label:hover{border-color:var(--color-primary)}
+.checkbox-label:has(input:checked){background:rgba(102,126,234,0.1);
+  border-color:var(--color-primary)}
+.checkbox-label input{width:24px;height:24px;accent-color:var(--color-primary)}
+.checkbox-label .emoji{font-size:1.5em}
+.upload-area{border:3px dashed var(--color-border);border-radius:var(--radius-lg);
+  padding:var(--space-2xl);text-align:center;cursor:pointer;
+  transition:all var(--transition-normal);background:var(--color-background)}
+.upload-area:hover,.upload-area:active{border-color:var(--color-primary);
+  background:rgba(102,126,234,0.05)}
+.upload-area input[type="file"]{display:none}
+.upload-area .icon{font-size:3em;margin-bottom:var(--space-sm)}
+.progress{display:none;margin:var(--space-lg) 0}
+.progress.active{display:block}
+.progress-bar{height:24px;background:var(--color-border);
+  border-radius:var(--radius-full);overflow:hidden}
+.progress-fill{height:100%;background:var(--color-primary);border-radius:var(--radius-full);transition:width 0.3s ease}
+@keyframes progress-stripes{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.progress-item{margin-bottom:var(--space-md)}
+.progress-item:last-child{margin-bottom:0}
+.progress-label{display:flex;justify-content:space-between;font-size:14px;color:var(--color-text-secondary);margin-bottom:var(--space-xs)}
+.progress-bar-small{height:8px;background:var(--color-border);border-radius:var(--radius-full);overflow:hidden}
+.progress-status{margin-top:var(--space-sm);text-align:center;
+  color:var(--color-text-secondary);font-size:14px}
+.file-list{margin-top:var(--space-md)}
+.file-item{display:flex;align-items:center;gap:var(--space-md);
+  padding:var(--space-md);background:var(--color-background);
+  border-radius:var(--radius-md);margin-bottom:var(--space-sm)}
+.file-item .icon{font-size:1.5em}
+.file-item .name{flex:1;font-weight:500}
+.file-item .remove{color:var(--color-error);cursor:pointer;padding:var(--space-sm)}
+.status-message{padding:var(--space-md);border-radius:var(--radius-md);
+  margin-top:var(--space-md);display:none}
+.status-message.active{display:block}
+.status-message.success{background:var(--color-success-light);color:#22543d}
+.status-message.error{background:var(--color-error-light);color:#742a2a}
+.recorder{background:var(--color-background);border-radius:var(--radius-lg);
+  padding:var(--space-lg);margin-bottom:var(--space-lg)}
+.recorder audio{width:100%;margin-top:var(--space-md)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-spinner{width:20px;height:20px;border:2px solid var(--color-info);
+  border-top-color:transparent;border-radius:50%;
+  animation:spin 0.8s linear infinite}
+.status-message.loading{display:flex;align-items:center;gap:var(--space-sm);
+  background:var(--color-info-light);color:#2a4365}
+@media(max-width:480px){:root{--space-lg:20px;--space-xl:24px}
+  body{padding:var(--space-sm)}
+  .container{padding:var(--space-lg)}
+  .checkbox-group{flex-direction:column}
+  .checkbox-label{width:100%}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{
+  animation-duration:0.01ms!important;transition-duration:0.01ms!important}
+  .progress-fill{animation:none;background:var(--color-primary)}}
+:focus-visible{outline:3px solid var(--color-primary);outline-offset:2px}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="/static/banner.png" alt="Atlas Family Journal" style="width:100%;max-width:600px;display:block;margin:0 auto 24px">
+        
+        <div class="section">
+            <label>Who is sharing this story?</label>
+            <input type="text" id="senderName" class="input" placeholder="Dad, Mom, Auntie, Nan, etc.">
+        </div>
+        
+        <div class="section">
+            <label>Tell us a story!</label>
+            <textarea id="story" class="textarea" placeholder="Write your story here..."></textarea>
+        </div>
+        
+        <div class="section recorder">
+            <label>🎤 Or record a voice message</label>
+            <button id="recordBtn" class="btn btn-full btn-secondary">Start Recording</button>
+            <audio id="audioPlayer" controls style="display:none;width:100%;margin-top:var(--space-md)"></audio>
+        </div>
+        
+        <div class="section">
+            <label>Who is this for?</label>
+            <div class="checkbox-group" id="kidsList"></div>
+        </div>
+        
+        <div class="section">
+            <label>Add photos or videos</label>
+            <div class="upload-area" onclick="document.getElementById('files').click()">
+                <div class="icon">📷</div>
+                <div>Click to select files</div>
+                <input type="file" id="files" name="files" multiple accept="image/*,video/*,audio/*">
+            </div>
+            <div id="uploadProgress"></div>
+            <div class="file-list" id="fileList"></div>
+        </div>
+        
+        <div class="section">
+            <button id="submitBtn" class="btn btn-primary btn-full">Send to Kids</button>
+            <div class="status-message" id="statusMessage"></div>
+        </div>
+    </div>
+
+    <script>
+        const kids = {{ kids_json|safe }};
+        let uploadedFiles = [];
+        let audioBlob = null;
+        let mediaRecorder = null;
+        
+        // Render kids checkboxes
+        const kidsList = document.getElementById('kidsList');
+        kids.forEach(kid => {
+            const div = document.createElement('label');
+            div.className = 'checkbox-label';
+            div.innerHTML = `
+                <input type="checkbox" name="kids" value="${kid.email}">
+                <span class="emoji">${kid.avatar_emoji}</span>
+                <span class="name">${kid.name}</span>
+            `;
+            kidsList.appendChild(div);
+        });
+        
+        // Audio recording
+        const recordBtn = document.getElementById('recordBtn');
+        recordBtn.onclick = async () => {
+            if (mediaRecorder) {
+                mediaRecorder.stop();
+                recordBtn.textContent = 'Start Recording';
+                mediaRecorder = null;
+            } else {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                const chunks = [];
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(chunks, { type: 'audio/webm' });
+                    document.getElementById('audioPlayer').src = URL.createObjectURL(audioBlob);
+                    document.getElementById('audioPlayer').style.display = 'block';
+                };
+                mediaRecorder.start();
+                recordBtn.textContent = 'Stop Recording';
+            }
+        };
+        
+        // File upload
+        document.getElementById('files').onchange = async function() {
+            const files = Array.from(this.files);
+            if (!files.length) return;
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Uploading...';
+            
+            for (const file of files) {
+                await uploadFile(file);
+            }
+            
+            submitBtn.disabled = false;
+            submitBtn.textContent = '✅ Ready to Send!';
+            
+            // Clear input
+            document.getElementById('files').value = '';
+        };
+        
+        async function uploadFile(file) {
+            return new Promise((resolve) => {
+                const progressContainer = document.getElementById('uploadProgress');
+                
+                // Create progress item
+                const item = document.createElement('div');
+                item.className = 'progress-item';
+                item.innerHTML = `
+                    <div class="progress-label">
+                        <span>${file.name}</span>
+                        <span class="progress-percent">0%</span>
+                    </div>
+                    <div class="progress-bar-small"><div class="progress-fill" style="width:0%"></div></div>
+                `;
+                progressContainer.appendChild(item);
+                
+                const progressFill = item.querySelector('.progress-fill');
+                const progressPercent = item.querySelector('.progress-percent');
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        progressFill.style.width = percent + '%';
+                        progressPercent.textContent = percent + '%';
+                    }
+                };
+                
+                xhr.onload = function() {
+                    try {
+                        const result = JSON.parse(xhr.responseText);
+                        if (result.status === 'uploaded') {
+                            uploadedFiles.push({
+                                name: result.filename,
+                                url: result.url || null,
+                                code: result.code || null,
+                                size: result.size,
+                                drive: result.drive || false
+                            });
+                            renderFileList();
+                            item.querySelector('.progress-label').innerHTML = `
+                                <span>✅ ${file.name}</span>
+                                <span>Done</span>
+                            `;
+                        } else {
+                            item.querySelector('.progress-label').innerHTML = `
+                                <span>❌ ${file.name}</span>
+                                <span>Failed</span>
+                            `;
+                        }
+                    } catch (e) {
+                        item.querySelector('.progress-label').innerHTML = `
+                            <span>❌ ${file.name}</span>
+                            <span>Error</span>
+                        `;
+                    }
+                    resolve();
+                };
+                
+                xhr.onerror = function() {
+                    item.querySelector('.progress-label').innerHTML = `
+                        <span>❌ ${file.name}</span>
+                        <span>Network error</span>
+                    `;
+                    resolve();
+                };
+                
+                xhr.ontimeout = function() {
+                    item.querySelector('.progress-label').innerHTML = `
+                        <span>❌ ${file.name}</span>
+                        <span>Timeout</span>
+                    `;
+                    resolve();
+                };
+                
+                xhr.timeout = 600000;
+                xhr.open('POST', '/upload-progress');
+                xhr.send(formData);
+            });
+        }
+        
+        function renderFileList() {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            uploadedFiles.forEach((file, i) => {
+                const div = document.createElement('div');
+                div.className = 'file-item';
+                div.innerHTML = `
+                    <span class="icon">${file.drive ? '☁️' : '📎'}</span>
+                    <span class="name">${file.name}</span>
+                    <span class="remove" onclick="removeFile(${i})">✕</span>
+                `;
+                fileList.appendChild(div);
+            });
+        }
+        
+        function removeFile(i) {
+            uploadedFiles.splice(i, 1);
+            renderFileList();
+        }
+        
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+            return (bytes/(1024*1024)).toFixed(1) + ' MB';
+        }
+        
+        // Form submission
+        document.getElementById('submitBtn').onclick = async function() {
+            const senderName = document.getElementById('senderName').value.trim();
+            const story = document.getElementById('story').value.trim();
+            const checkedKids = document.querySelectorAll('input[name="kids"]:checked');
+            const statusMsg = document.getElementById('statusMessage');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (!senderName) { showStatus('Please enter your name', 'error'); return; }
+            if (!story && !audioBlob && uploadedFiles.length === 0) { showStatus('Add a story, recording, or files', 'error'); return; }
+            if (checkedKids.length === 0) { showStatus('Select at least one child', 'error'); return; }
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            statusMsg.className = 'status-message loading active';
+            statusMsg.innerHTML = '<span class="loading-spinner"></span>Sending...';
+            
+            const formData = new FormData();
+            formData.append('story', story);
+            formData.append('sender_name', senderName);
+            checkedKids.forEach(cb => formData.append('kids', cb.value));
+            
+            if (audioBlob) {
+                formData.append('files', new File([audioBlob], 'voice.webm', { type: 'audio/webm' }));
+            }
+            
+            if (uploadedFiles.length > 0) {
+                formData.append('uploaded_files', JSON.stringify(uploadedFiles));
+            }
+            
+            try {
+                const response = await fetch('/submit', { method: 'POST', body: formData });
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus('✅ ' + result.message, 'success');
+                    // Reset form
+                    document.getElementById('story').value = '';
+                    document.getElementById('senderName').value = '';
+                    uploadedFiles = [];
+                    renderFileList();
+                    audioBlob = null;
+                    document.getElementById('audioPlayer').style.display = 'none';
+                    checkedKids.forEach(cb => cb.checked = false);
+                    document.getElementById('files').value = '';
+                    document.getElementById('uploadProgress').innerHTML = '';
+                    submitBtn.textContent = 'Send to Kids';
+                } else {
+                    showStatus('❌ ' + (result.error || 'Error sending'), 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Send to Kids';
+                }
+            } catch (err) {
+                showStatus('❌ Network error', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send to Kids';
+            }
+        };
+        
+        function showStatus(msg, type) {
+            const el = document.getElementById('statusMessage');
+            el.textContent = msg;
+            el.className = 'status-message ' + type + ' active';
+        }
+    </script>
+</body>
+</html>

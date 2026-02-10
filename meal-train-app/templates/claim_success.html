@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Meal Claimed!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+:root {
+  --color-primary: #667eea; --color-secondary: #764ba2; --color-success: #48bb78;
+  --color-success-light: #c6f6d5; --color-text-primary: #1a202c;
+  --color-text-secondary: #4a5568; --color-background: #f7fafc;
+  --color-surface: #ffffff; --color-border: #e2e8f0;
+  --space-xs:4px; --space-sm:8px; --space-md:16px; --space-lg:24px; --space-xl:32px;
+  --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-xl:24px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.08); --shadow-md:0 4px 12px rgba(0,0,0,0.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font:400 16px/1.6 var(--font-family,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto);
+  color:var(--color-text-primary);
+  background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));
+  min-height:100vh;padding:var(--space-md);
+  display:flex;align-items:center;justify-content:center
+}
+.container{max-width:500px;width:100%;background:var(--color-surface);
+  border-radius:var(--radius-xl);padding:var(--space-xl);text-align:center;
+  box-shadow:var(--shadow-md)}
+h1{font:700 28px/1.2 Nunito,var(--font-family);color:var(--color-success);
+  margin-bottom:var(--space-sm)}
+.section{margin-bottom:var(--space-lg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-sm);
+  padding:14px var(--space-lg);font:600 18px/1 var(--font-family);border:none;
+  border-radius:var(--radius-md);cursor:pointer;min-height:56px}
+.btn-primary{background:#008CFF;color:white;width:100%;max-width:300px}
+.btn-back{background:var(--color-background);color:var(--color-text-primary);
+  width:100%;max-width:300px;margin-top:var(--space-sm)}
+.success-box{background:var(--color-success-light);border-radius:var(--radius-md);
+  padding:var(--space-xl);margin-bottom:var(--space-lg)}
+.success-box .icon{font-size:64px;margin-bottom:var(--space-md)}
+.payment-box{background:var(--color-background);border-radius:var(--radius-md);
+  padding:var(--space-lg);margin-bottom:var(--space-lg)}
+.meal-amount{font:700 32px/1 Nunito,var(--font-family);color:var(--color-success);
+  margin:var(--space-sm) 0}
+</style>
+</head>
+<body>
+    <div class="container">
+        <div style="font-size:64px;margin-bottom:var(--space-md);">🎉</div>
+        
+        <h1>Thank You!</h1>
+        
+        <div class="success-box">
+            <div class="icon">✅</div>
+            <p style="font-size:20px;font-weight:600;">You claimed the meal!</p>
+            <p style="margin-top:var(--space-sm);">Your dining box car has been removed from the train. 🚂</p>
+        </div>
+        
+        {% if meal.amount %}
+        <div class="payment-box">
+            <p style="font-weight:600;margin-bottom:var(--space-md);">💵 Amount: ${{ meal.amount }}</p>
+        </div>
+        {% endif %}
+        
+        {% if payment_method == 'venmo' %}
+        <div class="payment-box">
+            <p style="font-weight:600;margin-bottom:var(--space-md);">💳 Pay via Venmo:</p>
+            <a href="https://venmo.com/?txn=pay&audience=public&recipients=Landon-Atlas&amount={{ meal.amount or 25 }}&note=Baby-Diana-Meal-Train" class="btn btn-primary">
+                💳 Pay ${{ meal.amount or 25 }} via Venmo
+            </a>
+        </div>
+        {% else %}
+        <div class="payment-box">
+            <p style="font-weight:600;margin-bottom:var(--space-sm);">💵 Pay via your own method:</p>
+        </div>
+        {% endif %}
+        
+        <a href="/" class="btn btn-back">🏠 Back to Train</a>
+    </div>
+</body>
+</html>
