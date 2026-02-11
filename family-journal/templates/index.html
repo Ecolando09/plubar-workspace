@@ -264,11 +264,12 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
                         const result = JSON.parse(xhr.responseText);
                         if (result.status === 'uploaded') {
                             uploadedFiles.push({
-                                name: result.filename,
+                                name: result.filename || result.name,
                                 url: result.url || null,
                                 code: result.code || null,
                                 size: result.size,
-                                drive: result.drive || false
+                                drive: result.drive || false,
+                                thumbnail: result.thumbnail || null
                             });
                             renderFileList();
                             item.querySelector('.progress-label').innerHTML = `

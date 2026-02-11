@@ -14,7 +14,7 @@ from mimetypes import guess_type
 import secrets
 import string
 
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, url_for
 
 app = Flask(__name__)
 
@@ -30,11 +30,36 @@ MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024
 
 google_drive_available = False
 try:
+    # Fix tokens if needed - convert authorized_tokens.json to token.json
+    import sys
+    sys.path.insert(0, os.path.dirname(__file__))
     from google_drive.uploader import GoogleDriveUploader
+
+    # Check and fix token.json from authorized_tokens.json
+    google_drive_dir = os.path.join(os.path.dirname(__file__), 'google_drive')
+    auth_tokens_path = os.path.join(google_drive_dir, 'authorized_tokens.json')
+    token_path = os.path.join(google_drive_dir, 'token.json')
+
+    if os.path.exists(auth_tokens_path) and not os.path.exists(token_path):
+        import json
+        print("Fixing Google Drive tokens...")
+        with open(auth_tokens_path) as f:
+            auth_tokens = json.load(f)
+        token_data = {
+            'access_token': auth_tokens.get('token', ''),
+            'refresh_token': auth_tokens.get('refresh_token', ''),
+            'token_uri': 'https://oauth2.googleapis.com/token',
+            'client_id': auth_tokens.get('client_id', ''),
+            'client_secret': auth_tokens.get('client_secret', ''),
+        }
+        with open(token_path, 'w') as f:
+            json.dump(token_data, f, indent=2)
+        print("Created token.json from authorized_tokens.json")
+
     google_drive_available = True
     print("Google Drive available")
-except:
-    print("Google Drive not available")
+except Exception as e:
+    print(f"Google Drive not available: {e}")
 
 # Track entry numbers per day
 ENTRY_COUNTER_FILE = 'entry_counter.json'
@@ -148,26 +173,41 @@ def upload_progress():
         print(f"Drive result: {result}")
         if result.get('shareLink'):
             os.remove(filepath)
+            
+            # Build thumbnail URL if exists
+            thumbnail_url = None
+            if thumbnail:
+                thumbnail_url = f"/thumbnails/{thumbnail}"
+            
             return jsonify({
                 'status': 'uploaded',
                 'filename': filename,
                 'url': result['shareLink'],
                 'size': file_size,
                 'drive': True,
-                'thumbnail': thumbnail
+                'thumbnail': thumbnail_url,
+                'name': filename  # Add name field for frontend compatibility
             })
         else:
             print(f"Drive upload succeeded but no share link. Keeping file local.")
             use_drive = False
     
+    # Handle local file (either not using Drive, or Drive failed)
     short_code = create_link(filepath)
+    
+    # Build thumbnail URL if exists
+    thumbnail_url = None
+    if thumbnail:
+        thumbnail_url = f"/thumbnails/{thumbnail}"
+    
     return jsonify({
         'status': 'uploaded',
         'filename': filename,
         'code': short_code,
         'size': file_size,
         'drive': False,
-        'thumbnail': thumbnail
+        'thumbnail': thumbnail_url,
+        'name': filename  # Add name field for frontend compatibility
     })
 
 @app.route('/uploads/<path:filename>')

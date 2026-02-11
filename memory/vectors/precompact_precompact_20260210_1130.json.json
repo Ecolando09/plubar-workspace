@@ -1,6 +1,6 @@
 {
   "source": "/root/.openclaw/workspace/memory/precompact/precompact_20260210_1130.json",
-  "timestamp": "2026-02-11T04:00:01.291133",
+  "timestamp": "2026-02-11T08:00:01.069257",
   "text": "{\"dump_time\": \"2026-02-10T11:30:02.031168\", \"sessions\": [], \"key_context\": {\"user_preferences\": [], \"active_projects\": [], \"recent_decisions\": [], \"pending_tasks\": [], \"open_loops\": []}}",
   "char_count": 186
 }
