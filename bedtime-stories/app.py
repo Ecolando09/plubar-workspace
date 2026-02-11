@@ -370,6 +370,41 @@ def play_audio(filename):
     """Serve generated TTS audio files"""
     return app.send_static_file(os.path.join('static', 'tts', filename))
 
+@app.route('/transcribe', methods=['POST'])
+def transcribe_audio():
+    """Transcribe uploaded audio using ElevenLabs Speech-to-Text"""
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    try:
+        api_key = config['tts']['elevenlabs']['api_key']
+        
+        # Save temp file
+        temp_path = '/tmp/upload_audio.wav'
+        file.save(temp_path)
+        
+        # Transcribe using ElevenLabs
+        response = requests.post(
+            'https://api.elevenlabs.io/v1/speech-to-text',
+            headers={'xi-api-key': api_key},
+            files={'file': open(temp_path, 'rb')},
+            data={'model_id': 'scribe_v2', 'language_code': 'en'}
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            text = result.get('text', '')
+            return jsonify({'success': True, 'transcription': text})
+        else:
+            return jsonify({'error': f'Transcription failed: {response.text}'}), 500
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     # Ensure stories file exists
     if not os.path.exists(STORIES_FILE):

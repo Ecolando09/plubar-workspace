@@ -324,6 +324,17 @@
             star.style.animationDelay = Math.random() * 2 + 's';
             starsContainer.appendChild(star);
         }
+    <script>
+        // Create stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 2 + 's';
+            starsContainer.appendChild(star);
+        }
         
         function selectVoice(voice) {
             document.querySelectorAll('.voice-option').forEach(el => el.classList.remove('selected'));
@@ -331,75 +342,73 @@
             document.getElementById('voice').value = voice;
         }
         
-        let recognition;
         let isRecording = false;
+        let mediaRecorder;
+        let audioChunks = [];
         
-        function toggleRecording() {
+        async function toggleRecording() {
             const recordBtn = document.getElementById('recordBtn');
             const recordText = document.getElementById('recordText');
             const recordingStatus = document.getElementById('recordingStatus');
             const detailsField = document.getElementById('details');
             
             if (!isRecording) {
-                if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                    alert('Your browser does not support voice recording.');
-                    return;
-                }
-                
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                recognition = new SpeechRecognition();
-                recognition.continuous = true;
-                recognition.interimResults = true;
-                recognition.lang = 'en-US';
-                
-                recognition.onstart = () => {
+                // Start recording
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
+                    
+                    mediaRecorder.onstop = async () => {
+                        recordingStatus.innerHTML = '🎧 Processing your voice...';
+                        
+                        // Save and transcribe
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const formData = new FormData();
+                        formData.append('file', audioBlob, 'recording.webm');
+                        
+                        try {
+                            const response = await fetch('/transcribe', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const result = await response.json();
+                            
+                            if (result.success && result.transcription) {
+                                detailsField.value = (detailsField.value + ' ' + result.transcription).trim();
+                                recordingStatus.innerHTML = '✅ Transcribed! Review your ideas above.';
+                                setTimeout(() => recordingStatus.classList.remove('visible'), 3000);
+                            } else {
+                                recordingStatus.innerHTML = '⚠️ Could not transcribe. Try again or type manually.';
+                            }
+                        } catch (err) {
+                            recordingStatus.innerHTML = '⚠️ Error transcribing. Please try again.';
+                        }
+                        
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+                    
+                    mediaRecorder.start();
                     isRecording = true;
                     recordBtn.classList.add('recording');
                     recordText.textContent = '🛑 Stop';
                     recordingStatus.classList.add('visible');
-                    recordingStatus.innerHTML = '🎧 Listening...';
-                };
-                
-                recognition.onresult = (event) => {
-                    let finalTranscript = '';
-                    let interimTranscript = '';
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                        if (event.results[i].isFinal) {
-                            finalTranscript += event.results[i][0].transcript + ' ';
-                        } else {
-                            interimTranscript += event.results[i][0].transcript;
-                        }
-                    }
-                    if (finalTranscript) {
-                        detailsField.value = (detailsField.value + ' ' + finalTranscript).trim();
-                    }
-                    if (interimTranscript) {
-                        recordingStatus.innerHTML = `🎧 Listening: "${interimTranscript}"...`;
-                    }
-                };
-                
-                recognition.onerror = (event) => {
-                    stopRecording();
-                    if (event.error === 'not-allowed') {
-                        alert('Microphone denied');
-                    }
-                };
-                
-                recognition.start();
+                    recordingStatus.innerHTML = '🎧 Listening... Speak your story ideas now!';
+                    
+                } catch (err) {
+                    alert('Could not access microphone. Please allow microphone access.');
+                }
             } else {
-                stopRecording();
+                // Stop recording
+                mediaRecorder.stop();
+                isRecording = false;
+                recordBtn.classList.remove('recording');
+                recordText.textContent = '🎤 Dictate Story Ideas';
             }
-        }
-        
-        function stopRecording() {
-            if (recognition) recognition.stop();
-            isRecording = false;
-            const recordBtn = document.getElementById('recordBtn');
-            const recordText = document.getElementById('recordText');
-            const recordingStatus = document.getElementById('recordingStatus');
-            recordBtn.classList.remove('recording');
-            recordText.textContent = '🎤 Dictate Story Ideas';
-            recordingStatus.classList.remove('visible');
         }
     </script>
 </body>
