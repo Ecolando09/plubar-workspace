@@ -91,6 +91,38 @@ class GoogleDriveUploader:
         folder = self.service.files().create(body=file_metadata, fields='id').execute()
         return folder['id']
     
+    def count_entries_for_date(self, date_str):
+        """Count how many entry folders exist for a given date."""
+        if not self.service:
+            self.authenticate()
+        
+        # Look for date folder
+        date_folder_query = f"name='{date_str}' and mimeType='application/vnd.google-apps.folder' and '{self.folder_id}' in parents"
+        date_results = self.service.files().list(q=date_folder_query, fields='files(id, name)').execute()
+        
+        if not date_results.get('files'):
+            return 0
+        
+        date_folder_id = date_results['files'][0]['id']
+        
+        # Count entry subfolders (format: "Entry #N")
+        entry_query = f"'{date_folder_id}' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'Entry'"
+        entry_results = self.service.files().list(q=entry_query, fields='files(id, name)').execute()
+        
+        count = 0
+        if entry_results.get('files'):
+            for f in entry_results['files']:
+                # Extract number from "Entry #N"
+                name = f['name']
+                if '#' in name:
+                    try:
+                        num = int(name.split('#')[-1].strip())
+                        count = max(count, num)
+                    except ValueError:
+                        pass
+        
+        return count
+    
     def upload_file(self, filepath, filename=None, folder_name=None):
         """Upload a file to Drive."""
         if not self.service:

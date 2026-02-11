@@ -116,12 +116,9 @@ def generate_video_thumbnail(filepath):
     
     return None
 
-def get_link(filename):
-    return filename[:6]
-
 def create_link(filepath):
-    code = get_link(os.path.basename(filepath))
-    return code
+    """Return the full basename as the lookup code for reliable matching"""
+    return os.path.basename(filepath)
 
 @app.route('/')
 def index():
@@ -165,9 +162,18 @@ def upload_progress():
             use_drive = False
     
     if use_drive and google_drive_available:
-        # Get entry number for naming the folder
-        entry_num = get_entry_number()
-        folder_name = f"Entry #{entry_num}"
+        # Get entry number by checking existing folders in Drive
+        date_str = datetime.now().strftime('%Y-%m-%d')
+        try:
+            # Count existing entries for this date in Drive
+            entry_count = uploader.count_entries_for_date(date_str)
+            entry_num = entry_count + 1
+            print(f"Found {entry_count} existing entries for {date_str}, creating Entry #{entry_num}")
+        except Exception as e:
+            print(f"Error counting entries: {e}")
+            entry_num = 1
+        
+        folder_name = f"{date_str}/Entry #{entry_num}"
         print(f"Uploading to Drive folder: {folder_name}")
         result = uploader.upload_and_share(filepath, filename=filename, folder_name=folder_name)
         print(f"Drive result: {result}")
@@ -269,29 +275,44 @@ def submit():
                     drive_links.append({'url': f['url'], 'filename': f.get('name', 'file')})
             elif f.get('code'):
                 code = f['code']
+                # Try to find the exact file first, then fall back to prefix match
+                exact_match = None
+                prefix_match = None
                 for filename in os.listdir(app.config['UPLOAD_FOLDER']):
-                    if filename.startswith(code):
-                        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                        mime_type, _ = guess_type(filename)
-                        maintype = mime_type.split('/')[0] if mime_type else 'application'
-                        subtype = mime_type.split('/')[1] if mime_type else ''
-                        
-                        if maintype == 'image':
-                            image_attachments.append(filepath)
-                        elif 'video' in maintype or 'video' in subtype:
-                            # Add link for local videos (when Drive share failed)
-                            local_url = url_for('serve_file', filename=filename, _external=True)
-                            if f.get('thumbnail'):
-                                video_thumbnails.append({
-                                    'url': local_url,
-                                    'thumbnail': f['thumbnail'],
-                                    'filename': f.get('name', 'video')
-                                })
-                            else:
-                                drive_links.append({'url': local_url, 'filename': f.get('name', 'video')})
-                        else:
-                            other_attachments.append(filepath)
+                    if filename == code:
+                        exact_match = filename
                         break
+                    elif filename.startswith(code) and not prefix_match:
+                        # Only use prefix match if we haven't found exact match yet
+                        prefix_match = filename
+                
+                # Use exact match if found, otherwise use prefix match
+                matched_filename = exact_match or prefix_match
+                
+                if matched_filename:
+                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], matched_filename)
+                    mime_type, _ = guess_type(matched_filename)
+                    maintype = mime_type.split('/')[0] if mime_type else 'application'
+                    subtype = mime_type.split('/', 1)[1] if mime_type and '/' in mime_type else ''
+                    
+                    if maintype == 'image':
+                        image_attachments.append(filepath)
+                        print(f"Matched image file: {matched_filename} -> {filepath}")
+                    elif 'video' in maintype or 'video' in subtype:
+                        # Add link for local videos (when Drive share failed)
+                        local_url = url_for('serve_file', filename=matched_filename, _external=True)
+                        if f.get('thumbnail'):
+                            video_thumbnails.append({
+                                'url': local_url,
+                                'thumbnail': f['thumbnail'],
+                                'filename': f.get('name', 'video')
+                            })
+                        else:
+                            drive_links.append({'url': local_url, 'filename': f.get('name', 'video')})
+                    else:
+                        other_attachments.append(filepath)
+                else:
+                    print(f"Warning: Could not find file for code '{code}'")
         
         # Calculate total image size
         total_image_size = sum(os.path.getsize(f) for f in image_attachments if os.path.exists(f))
@@ -306,10 +327,10 @@ def submit():
         date_str = now.strftime('%B %d, %Y')
         time_str = now.strftime('%I:%M %p').lstrip('0')
         
-        # Build HTML for Drive links
+        # Build HTML for Drive links (non-video files only, no bogus video links)
         links_html = ''
         for link_info in drive_links:
-            links_html += f'<p><a href="{link_info["url"]}">📎 Check out this video taken on {date_str} at {time_str}</a></p>'
+            links_html += f'<p><a href="{link_info["url"]}">📎 {link_info["filename"]}</a></p>'
         
         # Build HTML for video thumbnails with overlay
         thumbnails_html = ''
@@ -348,7 +369,7 @@ def submit():
             """
             
             msg = MIMEMultipart('mixed')
-            msg['Subject'] = f"📖 A Story from {sender_name}!"
+            msg['Subject'] = f"📖 A Story from {sender_name} on {now.strftime('%Y-%m-%d')}!"
             msg['From'] = f"{sender_name} <{config['email']['sender_email']}>"
             msg['To'] = kid_email
             msg.attach(MIMEText(body_html, 'html', 'utf-8'))
@@ -363,8 +384,14 @@ def submit():
                             mime_type = 'application/octet-stream'
                         
                         with open(filepath, 'rb') as fp:
-                            part = MIMEImage(fp.read(), _subtype=mime_type.split('/')[-1])
-                            part.add_header('Content-Disposition', 'attachment', filename=filename)
+                            # Use MIMEBase with explicit MIME type for better compatibility
+                            maintype, subtype = mime_type.split('/', 1)
+                            part = MIMEBase(maintype, subtype)
+                            part.set_payload(fp.read())
+                            encoders.encode_base64(part)
+                            # Use clean display name (strip timestamp prefix)
+                            display_name = filename.split('_', 2)[-1] if filename.count('_') >= 2 else filename
+                            part.add_header('Content-Disposition', 'attachment', filename=display_name)
                             msg.attach(part)
                         print(f"Attached image: {filename}")
                     except Exception as e:
@@ -424,7 +451,7 @@ def submit():
             """
             
             msg = MIMEMultipart('mixed')
-            msg['Subject'] = f"[CC] 📖 A Story from {sender_name}!"
+            msg['Subject'] = f"[CC] 📖 A Story from {sender_name} on {now.strftime('%Y-%m-%d')}!"
             msg['From'] = f"{sender_name} <{config['email']['sender_email']}>"
             msg['To'] = parent_email
             msg.attach(MIMEText(body_html, 'html', 'utf-8'))
@@ -439,8 +466,13 @@ def submit():
                             mime_type = 'application/octet-stream'
                         
                         with open(filepath, 'rb') as fp:
-                            part = MIMEImage(fp.read(), _subtype=mime_type.split('/')[-1])
-                            part.add_header('Content-Disposition', 'attachment', filename=filename)
+                            # Use MIMEBase with explicit MIME type for better compatibility
+                            maintype, subtype = mime_type.split('/', 1)
+                            part = MIMEBase(maintype, subtype)
+                            part.set_payload(fp.read())
+                            encoders.encode_base64(part)
+                            display_name = filename.split('_', 2)[-1] if filename.count('_') >= 2 else filename
+                            part.add_header('Content-Disposition', 'attachment', filename=display_name)
                             msg.attach(part)
                     except Exception as e:
                         print(f"Error attaching image {filepath}: {e}")

@@ -33,7 +33,7 @@ def save_stories(stories):
 
 # Gemini API for story generation
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyBb-XPGzEOqKF70UFRFr2HG2oPTVCFva50')
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro:generateContent?key={GEMINI_API_KEY}"
 
 # Curated imaginative settings based on age
 MAGICAL_WORLDS = {
