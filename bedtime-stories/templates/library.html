@@ -207,7 +207,7 @@
                     <span class="badge voice-badge">🎙️ {{ story.voice|capitalize }}</span>
                 </div>
                 <div class="story-values">
-                    {% for value in story.values %}
+                    {% for value in story['values'] %}
                     <span class="value-tag">{{ value }}</span>
                     {% endfor %}
                 </div>

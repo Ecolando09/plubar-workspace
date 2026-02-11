@@ -5,6 +5,8 @@ import os
 from datetime import datetime
 import uuid
 import requests
+import hashlib
+import random
 
 app = Flask(__name__)
 
@@ -31,55 +33,172 @@ def save_stories(stories):
 
 # Gemini API for story generation
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyBb-XPGzEOqKF70UFRFr2HG2oPTVCFva50')
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
 
-def generate_story_with_ai(age, name, details, positive_value):
-    """Generate a personalized story using Gemini AI"""
+# Curated imaginative settings based on age
+MAGICAL_WORLDS = {
+    '3': [
+        "a candy kingdom where rivers flow with chocolate and lollipop trees sway in the breeze",
+        "a cloud world where you can bounce on soft marshmallow clouds and meet friendly cloud animals",
+        "an enchanted garden where flowers sing lullabies and butterflies leave sparkly dust",
+        "a toy land where teddy bears have tea parties and toy trains take you anywhere you dream",
+        "a rainbow meadow where every step creates musical notes and rainbows appear after giggles"
+    ],
+    '4': [
+        "an underwater castle made of shimmering pearls with fish who paint pictures",
+        "a treehouse village in a thousand-year-old oak tree where squirrels are master builders",
+        "a wizard's garden where vegetables grow to enormous size and talk to you",
+        "a rainbow bridge that leads to a new magical land each time you cross it",
+        "a crystal cave that sparkles with a thousand colors and holds ancient secrets"
+    ],
+    '5': [
+        "a dragon's mountain peak where fire-breathing dragons guard treasure but just want friends",
+        "a floating island academy where young wizards learn to make magic with kindness",
+        "an ancient temple hidden in the jungle with puzzles that only brave hearts can solve",
+        "a time-travel garden where you can visit dinosaurs and future cities",
+        "a pirate ship that sails through the clouds searching for treasure islands"
+    ],
+    '6': [
+        "a forgotten kingdom beneath the sea where merpeople preserve ancient magic",
+        "a secret society of young heroes who protect the world from shadow creatures",
+        "an intergalactic academy where kids from different planets learn together",
+        "a mystical dimension where dreams become real and nightmares can be befriended",
+        "an ancient library that contains portals to any world you can imagine"
+    ]
+}
+
+# Companion characters with creative names and descriptions
+COMPANION_CHARACTERS = [
+    ("Oliver", "a clever fox with orange fur and a聪明 face who knows every path in the forest"),
+    ("Luna", "a magical owl with silver feathers who can see in the dark and whispers secrets"),
+    ("Finn", "a adventurous sea turtle who swam all around the world and collects shiny stones"),
+    ("Stella", "a sparkling unicorn with a rainbow mane who leaves glitter wherever she walks"),
+    ("Atlas", "a strong mountain bear with thick brown fur who has a heart of gold"),
+    ("Phoenix", "a gentle dragon who breathes bubbles instead of fire and loves to sing"),
+    ("Willow", "a wise old tree sprite who lives in an ancient oak and knows ancient stories"),
+    ("Jasper", "a mischievous ghost who loves to play pranks but has a kind heart"),
+    ("Atlas", "a tiny dragon no bigger than a kitten who sneezes confetti"),
+    ("Pippin", "a brave hedgehog who collected more acorns than anyone in the world"),
+    ("Fern", "a young fairy with iridescent wings who can make flowers bloom instantly"),
+    ("Bramble", "a grumpy but lovable troll who just wants someone to play with")
+]
+
+EXCITING_PROBLEMS = {
+    '3': ["someone is lost and needs finding", "something magical is broken and needs fixing", "everyone forgot how to smile", "the stars fell from the sky", "a friend is scared and needs comfort"],
+    '4': ["a dark cloud is blocking the sun", "someone stole the golden treasure", "the magic is draining away", "friends are fighting and need reconciling", "a curse turns everyone into stone"],
+    '5': ["an ancient evil is awakening", "the portal home is closing", "someone was kidnapped by shadows", "a powerful artifact was broken", "the kingdom is under attack"],
+    '6': ["a prophecy foretells doom", "time itself is unraveling", "an ancient evil has returned", "the chosen one has vanished", "the world is fading into nothingness"]
+}
+
+def generate_story_with_ai(age, name, details, positive_value, gender='any'):
+    """Generate a genuinely captivating, imaginative story"""
     
-    age_prompts = {
-        '3': "Use very simple words, short sentences (5-7 sentences), repetitive phrases. Focus on one main idea.",
-        '4': "Gentle adventure, simple plot (7-9 sentences). Curious protagonist discovering something new.",
-        '5': "Mild challenge with problem-solving (9-11 sentences). Character overcomes a small obstacle.",
-        '6': "Teamwork and challenges (11-13 sentences). Multiple characters working together to solve a problem."
-    }
+    # Get pronouns based on gender preference
+    pronouns = {
+        'boy': {'subject': 'he', 'object': 'him', 'possessive': 'his'},
+        'girl': {'subject': 'she', 'object': 'her', 'possessive': 'her'},
+        'any': {'subject': 'they', 'object': 'them', 'possessive': 'their'}
+    }.get(gender, {'subject': 'they', 'object': 'them', 'possessive': 'their'})
     
-    prompt = f"""Write a short bedtime story for a {age}-year-old named {name}.
+    # Pick random elements
+    setting = random.choice(MAGICAL_WORLDS.get(str(age), MAGICAL_WORLDS['4']))
+    companion = random.choice(COMPANION_CHARACTERS)
+    problem = random.choice(EXCITING_PROBLEMS.get(str(age), EXCITING_PROBLEMS['4']))
+    
+    # Custom story seed if provided
+    if details and details.strip() not in ['', 'A magical adventure', 'a magical adventure']:
+        custom_elements = f"CHILD'S IDEA: {details}"
+    else:
+        custom_elements = f"A magical world where {setting}. {name} meets {companion[0]}, who is {companion[1]}. {problem.capitalize()}!"
+    
+    # Title templates
+    title_templates = [
+        f"{name}'s Incredible Adventure",
+        f"{name} and the Magic of {positive_value.title()}",
+        f"The {positive_value.title()} of {name}",
+        f"{name}'s Unforgettable Journey",
+        f"The Day {name} Became a Hero"
+    ]
+    title = random.choice(title_templates)
+    
+    # Build comprehensive story prompt
+    word_count = {'3': '800-1200', '4': '1200-1800', '5': '1800-2500', '6': '2500-3500'}.get(str(age), '1500-2000')
+    
+    prompt = f"""{'='*60}
+CHARACTER: {name}, Age: {age}, Pronouns: {pronouns['subject']}/{pronouns['object']}
+POSITIVE VALUE: {positive_value.upper()}
+COMPANION: {companion[0]} ({companion[1]})
+{'='*60}
 
-Story idea from the child: {details}
+TASK: Write an ORIGINAL, CAPTIVATING bedtime story that will make this child EXCITED and IMAGINATIVE.
 
-Positive value to include: {positive_value}
+STORY ELEMENTS:
+- Setting: {setting}
+- Main Character: {name} ({pronouns['subject']} {pronouns['possessive']} adventures)
+- Special Companion: {companion[0]} ({companion[1]})
+- Central Problem: {problem}
+- Core Lesson: {positive_value}
 
-Requirements:
-- {age_prompts.get(str(age), age_prompts['4'])}
-- The story should teach the positive value naturally through the narrative
-- End with a gentle, satisfying conclusion
-- Make it cozy and perfect for bedtime
-- Write ONLY the story text, no titles or introductions
-- Keep it warm and imaginative
-- Write in English
+STORY STRUCTURE:
+
+**OPENING (Make them gasp!):**
+Start with SOMETHING UNEXPECTED - a sound, a sight, a feeling. Make the first sentence MEMORABLE.
+
+**BUILDING WONDER (Sensory details!):**
+Describe what {name} SEES: colors, shapes, magical elements
+Describe what {name} HEARS: sounds, voices, music
+Describe what {name} FEELS: emotions, textures, temperature
+Use vivid, specific words - not generic ones!
+
+**THE ADVENTURE (Exciting plot!):**
+{name} and {companion[0]} encounter challenges and make discoveries together
+Include at least 2-3 exciting moments or plot twists
+Show the {positive_value} through ACTIONS, not just words
+Let {name} be the HERO who saves the day!
+
+**THE TRIUMPH (Satisfying ending!):**
+{name} solves the problem using {positive_value}
+Show the transformation - before and after
+End with warmth, pride, and sweet dreams
+
+REQUIREMENTS:
+- {word_count} words - LONG and DETAILED
+- Rich sensory descriptions (sight, sound, touch, feeling)
+- Real character development for both {name} and {companion[0]}
+- EXCITING plot with ups and downs
+- The positive value shown through HEROIC ACTION
+- Warm, cozy ending perfect for sleep
+- NO lists, NO bullet points - pure prose
+- NO moralizing or lecturing
+- Make it SO GOOD the child begs for more stories
+
+START WRITING IMMEDIATELY:
+
 """
-    
+
     try:
         response = requests.post(GEMINI_URL, json={
             "contents": [{
                 "parts": [{"text": prompt}]
             }]
-        }, timeout=10)
+        }, timeout=45)
         
         data = response.json()
         if 'candidates' in data:
             story_text = data['candidates'][0]['content']['parts'][0]['text']
+            # Clean up any title/headers that might have been added
+            if 'START WRITING IMMEDIATELY:' in story_text:
+                story_text = story_text.split('START WRITING IMMEDIATELY:')[-1].strip()
             return {
-                'title': f"{name}'s Magical Story",
+                'title': title,
                 'content': story_text.strip(),
                 'age_group': age,
                 'values': [positive_value],
-                'style': f"Age-appropriate for {age}-year-olds"
+                'style': f"Epic adventure for brave {age}-year-old heroes"
             }
     except Exception as e:
         print(f"Gemini API error: {e}")
     
-    # Fallback to simple template if API fails
     return generate_fallback_story(age, name, details, positive_value)
 
 def generate_fallback_story(age, name, details, positive_value):
@@ -113,13 +232,14 @@ def create():
     data = request.form or request.json
     
     name = data.get('name', 'Little One')
-    details = data.get('details', 'A magical adventure')
+    details = data.get('details', '')
     positive_value = data.get('positive_value', 'kindness')
     age = data.get('age', '4')
-    voice = data.get('voice', 'amy')
+    voice = data.get('voice', 'adam')
+    gender = data.get('gender', 'any')
     
     # Generate story using AI
-    story = generate_story_with_ai(age, name, details, positive_value)
+    story = generate_story_with_ai(age, name, details, positive_value, gender)
     story['voice'] = voice
     
     return render_template('story.html', story=story, config=config)
@@ -133,7 +253,7 @@ def save():
         'id': story_id,
         'title': data.get('title', 'Untitled Story'),
         'content': data.get('content', ''),
-        'voice': data.get('voice', 'amy'),
+        'voice': data.get('voice', 'adam'),
         'age_group': data.get('age_group', '4'),
         'values': data.get('values', []),
         'created_at': datetime.now().isoformat()
@@ -165,10 +285,90 @@ def delete_story(story_id):
     save_stories(stories)
     return redirect(url_for('library'))
 
+# ElevenLabs TTS Integration
+ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech"
+
+def generate_tts(text, voice_id, api_key):
+    """Generate TTS audio using ElevenLabs API"""
+    headers = {
+        "Accept": "audio/mpeg",
+        "Content-Type": "application/json",
+        "xi-api-key": api_key
+    }
+    data = {
+        "text": text,
+        "model_id": "eleven_monolingual_v1",
+        "voice_settings": {
+            "stability": 0.5,
+            "similarity_boost": 0.5
+        }
+    }
+    
+    response = requests.post(
+        f"{ELEVENLABS_API_URL}/{voice_id}",
+        json=data,
+        headers=headers
+    )
+    
+    if response.status_code == 200:
+        return response.content
+    return None
+
+def get_cache_path(text, voice_id):
+    """Generate a cache filename for TTS audio"""
+    text_hash = hashlib.md5(text.encode()).hexdigest()[:16]
+    return f"static/tts/{voice_id}_{text_hash}.mp3"
+
+@app.route('/generate-tts', methods=['GET'])
+def generate_tts_endpoint():
+    """Generate TTS audio and return the file path"""
+    text = request.args.get('text', '')
+    voice_id = request.args.get('voice', 'adam')
+    
+    if not text:
+        return jsonify({'error': 'No text provided'}), 400
+    
+    # Get voice ID from config
+    voice_map = {
+        'adam': config['tts']['elevenlabs']['voices']['adam']['id'],
+        'bella': config['tts']['elevenlabs']['voices']['bella']['id'],
+        'daniel': config['tts']['elevenlabs']['voices']['daniel']['id'],
+        'antoni': config['tts']['elevenlabs']['voices']['antoni']['id'],
+        'sarah': config['tts']['elevenlabs']['voices']['sarah']['id']
+    }
+    
+    voice_config_id = voice_map.get(voice_id, voice_map['adam'])
+    api_key = config['tts']['elevenlabs']['api_key']
+    
+    # Check cache
+    cache_path = get_cache_path(text, voice_id)
+    full_cache_path = os.path.join(app.root_path, cache_path)
+    
+    if os.path.exists(full_cache_path):
+        return jsonify({
+            'success': True,
+            'audio_url': '/' + cache_path
+        })
+    
+    # Generate new audio
+    audio_content = generate_tts(text, voice_config_id, api_key)
+    
+    if audio_content:
+        # Save to cache
+        with open(full_cache_path, 'wb') as f:
+            f.write(audio_content)
+        
+        return jsonify({
+            'success': True,
+            'audio_url': '/' + cache_path
+        })
+    else:
+        return jsonify({'error': 'TTS generation failed'}), 500
+
 @app.route('/tts/<filename>')
 def play_audio(filename):
     """Serve generated TTS audio files"""
-    return app.send_static_file(os.path.join('tts', filename))
+    return app.send_static_file(os.path.join('static', 'tts', filename))
 
 if __name__ == '__main__':
     # Ensure stories file exists

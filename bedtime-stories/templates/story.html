@@ -31,103 +31,150 @@
         }
         h1 {
             text-align: center;
-            font-size: 2em;
-            margin-bottom: 20px;
+            font-size: 2.5em;
+            margin-bottom: 15px;
             color: #feca57;
         }
         .story-content {
-            font-size: 1.3em;
-            line-height: 1.8;
-            text-align: center;
+            font-size: 1.4em;
+            line-height: 1.9;
             white-space: pre-line;
-            color: #e0e0e0;
+            color: #e8e8e8;
+            margin-top: 30px;
         }
         .audio-player {
-            margin: 30px 0;
-            text-align: center;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
         }
         .audio-player h3 {
-            margin-bottom: 15px;
+            text-align: center;
+            margin-bottom: 20px;
             color: #54a0ff;
+            font-size: 1.3em;
         }
-        .audio-controls {
+        .voice-buttons {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
+            margin-bottom: 25px;
         }
-        audio {
-            width: 100%;
-            max-width: 400px;
-        }
-        .btn {
-            display: inline-block;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
+        .voice-btn {
+            padding: 12px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-decoration: none;
-            text-align: center;
+            font-size: 0.95em;
         }
-        .btn-primary {
-            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-            color: #fff;
+        .voice-btn:hover {
+            border-color: #54a0ff;
+            background: rgba(84, 160, 255, 0.2);
         }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+        .voice-btn.selected {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.25);
         }
-        .btn-secondary {
-            background: linear-gradient(45deg, #54a0ff, #2e86de);
-            color: #fff;
+        .play-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
         }
-        .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(84, 160, 255, 0.4);
+        .play-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 2em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .btn-outline {
-            background: transparent;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: #fff;
+        .play-btn:hover {
+            transform: scale(1.1);
         }
-        .btn-outline:hover {
+        .play-btn.primary {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+        .play-btn.secondary {
             background: rgba(255, 255, 255, 0.1);
-            border-color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
-        .actions {
+        .audio-progress {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .audio-status {
+            text-align: center;
+            color: #a0a0a0;
+            font-size: 0.95em;
+        }
+        audio {
+            display: none;
+        }
+        .nav-links {
             display: flex;
             justify-content: center;
             gap: 15px;
             margin-top: 30px;
             flex-wrap: wrap;
         }
-        .values {
+        .nav-btn {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .nav-btn.primary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: #fff;
+        }
+        .nav-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+        }
+        .nav-btn:hover {
+            transform: translateY(-3px);
+        }
+        .story-meta {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin: 20px 0;
+            gap: 12px;
             flex-wrap: wrap;
+        }
+        .meta-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        .age-badge {
+            background: rgba(84, 160, 255, 0.3);
         }
         .value-badge {
             background: linear-gradient(45deg, #feca57, #ff9f43);
             color: #1a1a2e;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
             font-weight: 600;
-        }
-        .age-badge {
-            background: rgba(84, 160, 255, 0.3);
-            color: #fff;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
         }
         .stars {
             position: fixed;
@@ -151,20 +198,11 @@
             0%, 100% { opacity: 0.3; }
             50% { opacity: 1; }
         }
-        .voice-selector {
-            margin-bottom: 15px;
-        }
-        .voice-selector label {
-            margin-right: 15px;
-            cursor: pointer;
-        }
         @media (max-width: 600px) {
-            .story-content {
-                font-size: 1.1em;
-            }
-            .actions {
-                flex-direction: column;
-            }
+            h1 { font-size: 1.8em; }
+            .story-content { font-size: 1.2em; }
+            .play-btn { width: 70px; height: 70px; font-size: 1.8em; }
+            .voice-btn { padding: 10px 15px; font-size: 0.85em; }
         }
     </style>
 </head>
@@ -175,54 +213,194 @@
         <div class="story-card">
             <h1>{{ story.title }}</h1>
             
-            <div class="values">
-                <span class="age-badge">👶 {{ story.age_group }} years</span>
-                {% for value in story.values %}
-                <span class="value-badge">💫 {{ value|capitalize }}</span>
+            <div class="story-meta">
+                <span class="meta-badge age-badge">👶 {{ story.age_group }} years</span>
+                {% for value in story['values'] %}
+                <span class="meta-badge value-badge">💫 {{ value|capitalize }}</span>
                 {% endfor %}
             </div>
             
+            <!-- Audio Player -->
             <div class="audio-player">
-                <h3>🔊 Listen to the Story</h3>
-                <div class="voice-selector">
-                    <label>
-                        <input type="radio" name="voice" value="amy" checked onchange="updateAudio('amy')"> 🎀 Amy (British)
-                    </label>
-                    <label>
-                        <input type="radio" name="voice" value="daniel" onchange="updateAudio('daniel')"> 👦 Daniel (American)
-                    </label>
-                    <label>
-                        <input type="radio" name="voice" value="bella" onchange="updateAudio('bella')"> 💕 Bella (Cheerful)
-                    </label>
+                <h3>🎧 Listen to Your Story</h3>
+                
+                <div class="voice-buttons">
+                    <button class="voice-btn selected" onclick="selectVoice('adam', this)">👨 Adam</button>
+                    <button class="voice-btn" onclick="selectVoice('bella', this)">👩 Bella</button>
+                    <button class="voice-btn" onclick="selectVoice('daniel', this)">👦 Daniel</button>
+                    <button class="voice-btn" onclick="selectVoice('antoni', this)">🎭 Antoni</button>
+                    <button class="voice-btn" onclick="selectVoice('sarah', this)">👩‍🦰 Sarah</button>
                 </div>
-                <audio id="audioPlayer" controls>
-                    <source src="" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
-                <p id="audioNote" style="color: #a0a0a0; margin-top: 10px; font-size: 0.9em;">
-                    Configure TTS settings in config.yaml to enable audio playback
-                </p>
+                
+                <div class="play-controls">
+                    <button class="play-btn secondary" onclick="skipBack()" title="Skip back 10s">⏪</button>
+                    <button class="play-btn primary" id="playPauseBtn" onclick="togglePlay()" title="Play/Pause">▶️</button>
+                    <button class="play-btn secondary" onclick="stop()" title="Stop">⏹️</button>
+                </div>
+                
+                <div class="audio-progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                
+                <p class="audio-status" id="audioStatus">Tap play to listen!</p>
             </div>
             
+            <!-- Story Content -->
             <div class="story-content">{{ story.content }}</div>
             
-            <div class="actions">
-                <button class="btn btn-secondary" onclick="saveStory()">💾 Save Story</button>
-                <button class="btn btn-outline" onclick="playAudio()">▶️ Read Aloud</button>
-                <a href="/" class="btn btn-primary">✨ New Story</a>
-                <a href="/library" class="btn btn-outline">📚 Library</a>
+            <!-- Navigation -->
+            <div class="nav-links">
+                <a href="/" class="nav-btn primary">✨ New Story</a>
+                <a href="/library" class="nav-btn secondary">📚 Library</a>
             </div>
         </div>
     </div>
     
+    <audio id="audioPlayer" preload="auto"></audio>
+    
     <script>
         const storyData = {
-            title: '{{ story.title }}',
-            content: `{{ story.content }}`,
-            voice: 'amy',
+            title: '{{ story.title|replace("'", "\\'") }}',
+            content: `{{ story.content.replace('\n', ' ').replace('"', '\\"') | truncate(1000) }}`,
+            voice: 'adam',
             age_group: '{{ story.age_group }}',
-            values: {{ story.values|tojson }}
+            values: {{ story['values']|tojson }}
         };
+        
+        let isPlaying = false;
+        let currentAudio = null;
+        let speechUtterance = null;
+        
+        function selectVoice(voice, btn) {
+            storyData.voice = voice;
+            document.querySelectorAll('.voice-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            
+            if (isPlaying) {
+                stop();
+            }
+            
+            document.getElementById('audioStatus').textContent = 
+                `Voice: ${voice.charAt(0).toUpperCase() + voice.slice(1)} - Ready to play!`;
+        }
+        
+        function togglePlay() {
+            const btn = document.getElementById('playPauseBtn');
+            
+            if (isPlaying) {
+                pause();
+                btn.textContent = '▶️';
+            } else {
+                play();
+                btn.textContent = '⏸️';
+            }
+        }
+        
+        function play() {
+            if (currentAudio) {
+                currentAudio.play();
+                isPlaying = true;
+                document.getElementById('audioStatus').textContent = 'Playing...';
+                return;
+            }
+            
+            // Try ElevenLabs TTS first (limited to ~1000 chars for API)
+            fetch(`/generate-tts?text=${encodeURIComponent(storyData.content.substring(0, 1000))}&voice=${storyData.voice}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.audio_url) {
+                        currentAudio = new Audio(data.audio_url);
+                        currentAudio.onended = () => {
+                            isPlaying = false;
+                            document.getElementById('playPauseBtn').textContent = '▶️';
+                            document.getElementById('audioStatus').textContent = 'Story finished! 🎉';
+                            updateProgress(100);
+                        };
+                        currentAudio.ontimeupdate = () => {
+                            const progress = (currentAudio.currentTime / currentAudio.duration) * 100;
+                            updateProgress(progress);
+                        };
+                        currentAudio.play();
+                        isPlaying = true;
+                        document.getElementById('audioStatus').textContent = 'Playing...';
+                    } else {
+                        // Fallback to browser speech
+                        playBrowserSpeech();
+                    }
+                })
+                .catch(() => {
+                    playBrowserSpeech();
+                });
+        }
+        
+        function playBrowserSpeech() {
+            if ('speechSynthesis' in window) {
+                speechUtterance = new SpeechSynthesisUtterance(storyData.content);
+                speechUtterance.rate = 0.9;
+                speechUtterance.pitch = 1;
+                
+                speechUtterance.onstart = () => {
+                    isPlaying = true;
+                    document.getElementById('audioStatus').textContent = 'Playing with browser voice...';
+                };
+                
+                speechUtterance.onend = () => {
+                    isPlaying = false;
+                    document.getElementById('playPauseBtn').textContent = '▶️';
+                    document.getElementById('audioStatus').textContent = 'Story finished! 🎉';
+                };
+                
+                speechSynthesis.speak(speechUtterance);
+            } else {
+                document.getElementById('audioStatus').textContent = 
+                    'Audio not supported. Read the story below!';
+            }
+        }
+        
+        function pause() {
+            if (currentAudio) {
+                currentAudio.pause();
+            }
+            if (speechUtterance) {
+                speechSynthesis.pause();
+            }
+            isPlaying = false;
+            document.getElementById('audioStatus').textContent = 'Paused';
+        }
+        
+        function stop() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
+            if (speechUtterance) {
+                speechSynthesis.cancel();
+                speechUtterance = null;
+            }
+            isPlaying = false;
+            document.getElementById('playPauseBtn').textContent = '▶️';
+            document.getElementById('audioStatus').textContent = 'Stopped';
+            updateProgress(0);
+        }
+        
+        function skipBack() {
+            if (currentAudio) {
+                currentAudio.currentTime = Math.max(0, currentAudio.currentTime - 10);
+            }
+            if (speechUtterance && speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                playBrowserSpeech();
+                // Estimate position and skip
+                setTimeout(() => {
+                    // Can't easily skip browser speech, just restart
+                }, 100);
+            }
+        }
+        
+        function updateProgress(percent) {
+            document.getElementById('progressBar').style.width = percent + '%';
+        }
         
         function createStars() {
             const starsContainer = document.getElementById('stars');
@@ -234,41 +412,6 @@
                 star.style.animationDelay = Math.random() * 2 + 's';
                 starsContainer.appendChild(star);
             }
-        }
-        
-        function updateAudio(voice) {
-            storyData.voice = voice;
-            const player = document.getElementById('audioPlayer');
-            player.src = `/tts/${voice}?text=${encodeURIComponent(storyData.content.substring(0, 200))}`;
-            player.load();
-        }
-        
-        function playAudio() {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(storyData.content);
-                utterance.rate = 0.9;
-                utterance.pitch = 1;
-                speechSynthesis.speak(utterance);
-            } else {
-                alert('Browser speech synthesis not supported. Configure TTS in settings.');
-            }
-        }
-        
-        function saveStory() {
-            fetch('/save', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(storyData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Story saved! 📚');
-                }
-            })
-            .catch(error => {
-                alert('Error saving story: ' + error);
-            });
         }
         
         createStars();

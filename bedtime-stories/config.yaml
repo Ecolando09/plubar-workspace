@@ -9,27 +9,33 @@ cloudflare:
 # TTS Configuration
 tts:
   piper:
-    enabled: true
+    enabled: false
     voice: en_US-lessac-medium
     output_format: wav
   elevenlabs:
     enabled: true
-    api_key: YOUR_ELEVENLABS_API_KEY
+    api_key: e1eddd1d04c1770684999c8d9a050d833a18cea0058a9e244f8d7485eab3e728
     voices:
-      amy:
-        id: YOUR_AMY_VOICE_ID
-        name: Amy (British)
+      adam:
+        id: nPczCjz82KWdKScP46A1
+        name: Adam (Warm Dad)
       daniel:
-        id: YOUR_DANIEL_VOICE_ID
-        name: Daniel (American)
+        id: 21m00Tcm4TlvDq8ikWAM
+        name: Daniel (Friendly Boy)
       bella:
-        id: YOUR_BELLA_VOICE_ID
-        name: Bella (Cheerful)
+        id: EXAVITQu4vr4xnSDxMaL
+        name: Bella (Cheerful Mom)
+      antoni:
+        id: ErXwobaYiN019PkySvjV
+        name: Antoni (Storyteller)
+      sarah:
+        id: nPczCjz82KWdKScP46A1
+        name: Sarah (Gentle)
 
 # Story settings
 stories:
   default_age: 4
-  max_story_length: 500
+  max_story_length: 800
   values:
     - kindness
     - sharing
