@@ -1,13 +1,19 @@
 {
-  "participants": [
-    {
-      "id": "1PYxn_z_xBWvx5lMPMdwLA",
-      "name": "Landon",
-      "email": "landon.gennetten@gmail.com",
-      "joined_at": "2026-02-10T12:08:39.488693"
-    }
-  ],
+  "participants": [],
   "meals": [
+    {
+      "id": "y1Ac7Fkq4oknVHPx",
+      "note": "",
+      "meal_type": "Pizza",
+      "amount": "69",
+      "receipt_image": null,
+      "claimed": true,
+      "created_at": "2026-02-12T00:43:04.783703",
+      "email_sent": true,
+      "claimed_at": "2026-02-12T00:44:08.356078",
+      "payment_method": "venmo",
+      "participant_email": "landon.gennetten@gmail.com"
+    },
     {
       "id": "pjyBuTODtdhMRpvm",
       "note": "",
