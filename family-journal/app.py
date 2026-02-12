@@ -3,7 +3,7 @@ import os
 import yaml
 import smtplib
 import subprocess
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
@@ -16,12 +16,17 @@ import string
 
 from flask import Flask, render_template, request, jsonify, send_from_directory, url_for
 
+# Set timezone to EST
+EST = timezone(timedelta(hours=-5))  # EST is UTC-5 (or -4 for EDT)
+
+def now_est():
+    """Return current datetime in EST"""
+    return datetime.now(EST)
+
 app = Flask(__name__)
 
 with open('config.yaml') as f:
     config = yaml.safe_load(f)
-
-app.config['MAX_CONTENT_LENGTH'] = config['app'].get('max_content_length', 524288000)
 app.config['UPLOAD_FOLDER'] = config['app']['upload_folder']
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'thumbnails'), exist_ok=True)
@@ -66,7 +71,7 @@ ENTRY_COUNTER_FILE = 'entry_counter.json'
 
 def get_entry_number():
     """Get the next entry number for today"""
-    today = datetime.now().strftime('%Y-%m-%d')
+    today = now_est().strftime('%Y-%m-%d')
     
     if os.path.exists(ENTRY_COUNTER_FILE):
         with open(ENTRY_COUNTER_FILE, 'r') as f:
@@ -137,7 +142,7 @@ def upload_progress():
         return jsonify({'error': 'No file selected'}), 400
     
     filename = file.filename
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}")
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], f"{now_est().strftime('%Y%m%d_%H%M%S')}_{filename}")
     file.save(filepath)
     file_size = os.path.getsize(filepath)
     print(f"Uploaded file: {filename} ({file_size / 1024 / 1024:.2f} MB)")
@@ -163,17 +168,9 @@ def upload_progress():
     
     if use_drive and google_drive_available:
         # Get entry number by checking existing folders in Drive
-        date_str = datetime.now().strftime('%Y-%m-%d')
-        try:
-            # Count existing entries for this date in Drive
-            entry_count = uploader.count_entries_for_date(date_str)
-            entry_num = entry_count + 1
-            print(f"Found {entry_count} existing entries for {date_str}, creating Entry #{entry_num}")
-        except Exception as e:
-            print(f"Error counting entries: {e}")
-            entry_num = 1
-        
-        folder_name = f"{date_str}/Entry #{entry_num}"
+        date_str = now_est().strftime('%Y-%m-%d')
+        # Simplified folder structure - just date, no Entry # subfolders
+        folder_name = date_str
         print(f"Uploading to Drive folder: {folder_name}")
         result = uploader.upload_and_share(filepath, filename=filename, folder_name=folder_name)
         print(f"Drive result: {result}")
@@ -231,6 +228,8 @@ def submit():
         story = request.form.get('story', '').strip()
         kids = request.form.getlist('kids')
         cc_parents = request.form.getlist('cc_parents')
+        cc_me = request.form.getlist('cc_me')
+        cc_me_email = request.form.get('cc_me_email', '').strip()
         uploaded_files_json = request.form.get('uploaded_files', '[]')
         
         if not sender_name:
@@ -255,6 +254,10 @@ def submit():
             for parent in config.get('parents', []):
                 if parent.get('email') in cc_parents:
                     parent_emails.append(parent['email'])
+        
+        # Add "Me" email if checkbox is checked
+        if cc_me and cc_me_email:
+            parent_emails.append(cc_me_email)
         
         # Collect Drive links, thumbnails, and local files
         drive_links = []
@@ -323,7 +326,7 @@ def submit():
         attach_images = total_image_size < MAX_IMAGES_SIZE
         
         # Build link text with date/time
-        now = datetime.now()
+        now = now_est()
         date_str = now.strftime('%B %d, %Y')
         time_str = now.strftime('%I:%M %p').lstrip('0')
         

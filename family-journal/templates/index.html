@@ -150,6 +150,26 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
         </div>
         
         <div class="section">
+            <label>Also send copy to:</label>
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="cc_parents" value="true">
+                    <span class="emoji">👨‍👩‍👧</span>
+                    <span class="name">Mom & Dad</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="cc_me" value="true" id="ccMeCheckbox" onchange="toggleCcMeEmail()">
+                    <span class="emoji">📧</span>
+                    <span class="name">Me</span>
+                </label>
+            </div>
+            <div id="ccMeEmailSection" style="display:none;margin-top:var(--space-md)">
+                <input type="email" name="cc_me_email" placeholder="myemail@myemail.com" 
+                       style="width:100%;padding:var(--space-md);border:2px solid var(--color-border);border-radius:var(--radius-md);font-size:16px;">
+            </div>
+        </div>
+        
+        <div class="section">
             <label>Add photos or videos</label>
             <div class="upload-area" onclick="document.getElementById('files').click()">
                 <div class="icon">📷</div>
@@ -187,6 +207,13 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
         
         // Audio recording
         const recordBtn = document.getElementById('recordBtn');
+        
+        // Toggle "Me" email input
+        function toggleCcMeEmail() {
+            const checkbox = document.getElementById('ccMeCheckbox');
+            const emailSection = document.getElementById('ccMeEmailSection');
+            emailSection.style.display = checkbox.checked ? 'block' : 'none';
+        }
         recordBtn.onclick = async () => {
             if (mediaRecorder) {
                 mediaRecorder.stop();
