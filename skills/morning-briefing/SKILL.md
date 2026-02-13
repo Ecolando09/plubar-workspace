@@ -1,86 +1,108 @@
 # Morning Briefing Skill
 
-Generate daily morning briefing with weather forecast, crypto prices, AI news, viral posts, and newsletter summaries.
+Generate daily morning briefing with multiple delivery formats: Discord embed, HTML email, voice audio, and JSON API.
 
 ## Description
 
-Produces a comprehensive morning briefing combining:
-- **Weather forecast** (highs, lows, rain chance, sunrise/sunset)
-- **Crypto prices** (Moonbirds/BIRB)
-- **Viral posts** (OpenClaw/AI trending content)
-- **Newsletter summaries** (via Gmail/Substack integration)
-- **Apps status** (all family apps)
+Produces a comprehensive morning briefing with **4 delivery formats**:
 
-Designed for automated cron execution at 8AM EST.
+| Format | File | Use For |
+|--------|------|---------|
+| Discord Embed | `.json` | Rich Discord messages with colors/fields |
+| HTML Email | `.html` | Styled email with images/icons |
+| Voice/Audio | `_voice.txt` | ElevenLabs TTS podcast-style |
+| Markdown | `.md` | Quick text reference |
+
+All formats include:
+- Weather forecast (highs, lows, rain chance, sunrise/sunset)
+- Crypto prices (Moonbirds/BIRB)
+- Viral posts (OpenClaw/AI trending content)
+- Newsletter summaries (Substack RSS)
+- Apps status
 
 ## Use When
 
 - User requests morning briefing
 - Cron job triggers daily update
-- User wants comprehensive daily summary
-- Morning routine automation needed
+- User wants voice/audio version
+- User wants email digest
 
 ## Don't Use When
 
 - User wants quick price check (→ `birb-tracker`)
 - User wants specific news article (→ `brave-search`)
-- User wants real-time trading (→ not supported)
-- User asks for evening/specific time briefing (→ run manually with parameters)
+- User wants real-time trading data (→ not supported)
 
 ## Inputs
 
-- `output_path`: Where to save briefing (default: `/root/.openclaw/workspace/outputs/daily/`)
-- `format`: Output format (`text`, `markdown`, `json`)
-- `location`: Latitude/longitude (default: Spartanburg, SC)
+- `format`: Output format (`all`, `discord`, `email`, `voice`, `markdown`)
+- `output_path`: Custom output directory
 
 ## Outputs
 
-- Briefing saved to `/root/.openclaw/workspace/outputs/daily/briefing_YYYY-MM-DD.md`
-- JSON summary for programmatic use
-- Formatted message for Discord delivery
+All files saved to `/root/.openclaw/workspace/outputs/daily/`:
+
+```
+briefing_YYYY-MM-DD.md       # Markdown
+briefing_YYYY-MM-DD.json      # Discord Embed (for API posting)
+briefing_YYYY-MM-DD.html     # HTML Email
+briefing_YYYY-MM-DD_voice.txt # TTS Script
+```
 
 ## Examples
 
 ```bash
-# Standard morning briefing
+# Generate all formats (default)
 python3 /root/.openclaw/workspace/skills/morning-briefing/briefing.py
 
-# JSON format for APIs
-python3 /root/.openclaw/workspace/skills/morning-briefing/briefing.py --format json
+# Discord embed only (for API posting)
+python3 /root/.openclaw/workspace/skills/morning-briefing/briefing.py --format discord
 
-# Custom output path
-python3 /root/.openclaw/workspace/skills/morning-briefing/briefing.py --output /tmp/briefing.md
+# Voice script only
+python3 /root/.openclaw/workspace/skills/morning-briefing/briefing.py --format voice
+
+# Email HTML only
+python3 /root/.openclaw/workspace/skills/morning-briefing/briefing.py --format email
 ```
+
+## Discord Integration
+
+Post rich embed to Discord:
+
+```bash
+# Post JSON embed to Discord channel
+curl -X POST "https://discord.com/api/webhooks/CHANNEL_ID/WEBHOOK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @/root/.openclaw/workspace/outputs/daily/briefing_$(date +%Y-%m-%d).json
+```
+
+Or use OpenClaw message tool with the JSON.
+
+## Voice/Audio (ElevenLabs TTS)
+
+Convert voice script to audio:
+
+```bash
+# Generate audio from voice script
+curl -X POST "https://api.elevenlabs.io/v1/text-to-speech/VOICE_ID" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" \
+  -d "{\"text\": $(cat briefing_2026-02-13_voice.txt)}" \
+  --output briefing_2026-02-13.mp3
+```
+
+Recommended voices: "Nova" (cheerful) or "Daniel" (calm)
 
 ## Dependencies
 
 - `requests` or `urllib` (weather API)
 - `python-dateutil`
-- `gog` CLI configured for Gmail newsletter access (optional)
-- Templates in `skills/morning-briefing/templates/`
-
-## Newsletter Setup
-
-To enable newsletter summaries:
-
-```bash
-# Install gog CLI
-brew install steipete/tap/gogcli  # macOS
-# Or: curl -s https://gogcli.sh/install | bash  # Linux
-
-# Configure OAuth
-gog auth credentials /path/to/client_secret.json
-gog auth add you@gmail.com --services gmail
-
-# Test newsletter access
-gog gmail search 'from:theinnermostloop@substack.com' --max 1
-```
+- Open-Meteo API (free, no key)
+- Substack RSS (free, no key)
 
 ## Notes
 
 - Runs automatically via cron at 8AM EST
-- Weather uses Open-Meteo (free, no API key)
-- Viral posts use Brave Search API (requires `BRAVE_API_KEY`)
-- Newsletter requires `gog` Gmail OAuth configuration
-- Templates loaded from skill folder (not embedded)
-- Outputs to `/root/.openclaw/workspace/outputs/daily/` boundary
+- All formats generated simultaneously
+- Voice script optimized for natural TTS flow
+- HTML email uses responsive design for mobile
+- Discord embed uses purple theme (#6B5B95)
