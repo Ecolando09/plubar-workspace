@@ -66,3 +66,11 @@ Set `ELEVENLABS_API_KEY` environment variable, or configure in clawdbot.json:
 # Get JSON for processing
 {baseDir}/scripts/transcribe.sh podcast.mp3 --json > transcript.json
 ```
+
+## Don't Use When
+
+- Audio is very short (< 1 second) - may not transcribe well
+- User wants real-time streaming transcription (→ use streaming API directly)
+- User needs sentiment analysis (→ transcribe then use NLP)
+- User wants to translate (→ use translation service after transcription)
+- Audio quality is very poor (→ manually transcribe)

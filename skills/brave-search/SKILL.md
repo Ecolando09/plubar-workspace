@@ -55,3 +55,11 @@ Content: (if --content flag used)
 - Looking up facts or current information
 - Fetching content from specific URLs
 - Any task requiring web search without interactive browsing
+
+## Don't Use When
+
+- User wants real-time chat or messaging (→ `agentchat`)
+- User wants to send emails (→ use email APIs directly)
+- User wants to browse visually/interact with page elements (→ use browser skill)
+- User asks for content summarization of already-loaded content (→ summarize directly)
+- User wants to interact with SaaS apps (→ use api-gateway skill)

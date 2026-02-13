@@ -1,0 +1,105 @@
+{
+  "version": "1.0",
+  "description": "OpenClaw API Allowlist - Defines approved external API endpoints",
+  "last_updated": "2026-02-13",
+
+  "allowed_domains": [
+    {
+      "domain": "api.coingecko.com",
+      "purpose": "Crypto price data (BIRB, Moonbirds)",
+      "auth_required": false,
+      "rate_limit": "25-50 requests/minute"
+    },
+    {
+      "domain": "api.elevenlabs.io",
+      "purpose": "Speech-to-text transcription (Scribe v2)",
+      "auth_required": true,
+      "env_var": "ELEVENLABS_API_KEY"
+    },
+    {
+      "domain": "api.github.com",
+      "purpose": "Git operations, repo sync",
+      "auth_required": true,
+      "env_var": "GITHUB_TOKEN or SSH key"
+    },
+    {
+      "domain": "api.openai.com",
+      "purpose": "AI model inference (if used)",
+      "auth_required": true,
+      "env_var": "OPENAI_API_KEY"
+    },
+    {
+      "domain": "api.brave.com",
+      "purpose": "Web search and content extraction",
+      "auth_required": true,
+      "env_var": "BRAVE_API_KEY"
+    },
+    {
+      "domain": "gateway.maton.ai",
+      "purpose": "Google Drive API via Maton gateway",
+      "auth_required": true,
+      "env_var": "MATON_API_KEY"
+    },
+    {
+      "domain": "api.moltbook.com",
+      "purpose": "Moltbook social protocol",
+      "auth_required": true,
+      "env_var": "MOLTBOOK_API_KEY"
+    },
+    {
+      "domain": "api.open-meteo.com",
+      "purpose": "Weather data (no API key required)",
+      "auth_required": false
+    },
+    {
+      "domain": "api.telegram.org",
+      "purpose": "Telegram bot notifications",
+      "auth_required": true,
+      "env_var": "TELEGRAM_BOT_TOKEN"
+    },
+    {
+      "domain": "discord.com",
+      "purpose": "Discord bot messaging",
+      "auth_required": true,
+      "env_var": "DISCORD_BOT_TOKEN"
+    }
+  ],
+
+  "blocked_patterns": [
+    "*://*.unknown/*",
+    "*://localhost/*",
+    "*://127.0.0.1/*"
+  ],
+
+  "validation_rules": {
+    "outbound_requests": {
+      "enforce_allowlist": true,
+      "log_blocked": true,
+      "timeout_seconds": 30
+    },
+    "credential_handling": {
+      "use_env_vars": true,
+      "never_log_secrets": true,
+      "never_commit_secrets": true,
+      "use_dotenv_files": false
+    }
+  },
+
+  "skill_specific_rules": {
+    "birb-tracker": {
+      "allowed_endpoints": ["api.coingecko.com"],
+      "caching_seconds": 60
+    },
+    "brave-search": {
+      "allowed_endpoints": ["api.brave.com"],
+      "rate_limit": "10 requests/minute"
+    },
+    "elevenlabs-stt": {
+      "allowed_endpoints": ["api.elevenlabs.io"],
+      "max_file_size_mb": 25
+    },
+    "google-drive": {
+      "allowed_endpoints": ["gateway.maton.ai", "www.googleapis.com"]
+    }
+  }
+}

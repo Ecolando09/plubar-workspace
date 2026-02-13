@@ -315,6 +315,14 @@ response = requests.get(
 - IMPORTANT: When using curl commands, use `curl -g` when URLs contain brackets (`fields[]`, `sort[]`, `records[]`) to disable glob parsing
 - IMPORTANT: When piping curl output to `jq` or other commands, environment variables like `$MATON_API_KEY` may not expand correctly in some shell environments. You may get "Invalid API key" errors when piping.
 
+## Don't Use When
+
+- User wants to edit Google Docs content (→ use Google Docs API directly)
+- User wants real-time collaboration features (→ not supported)
+- User wants to manage Google Calendar (→ use `gog` skill)
+- User wants to send emails (→ use Gmail API or `gog` skill)
+- User wants to interact with other SaaS apps (→ use api-gateway skill)
+
 ## Error Handling
 
 | Status | Meaning |

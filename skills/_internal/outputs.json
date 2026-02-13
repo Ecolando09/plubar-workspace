@@ -1,0 +1,58 @@
+{
+  "version": "1.0",
+  "description": "OpenClaw Output Boundary Configuration",
+  "last_updated": "2026-02-13",
+
+  "output_directory": "/root/.openclaw/workspace/outputs",
+
+  "folders": {
+    "daily": {
+      "path": "/root/.openclaw/workspace/outputs/daily",
+      "purpose": "Daily briefings, morning reports, daily summaries",
+      "retention_days": 30,
+      "file_pattern": "briefing_YYYY-MM-DD.*"
+    },
+    "reports": {
+      "path": "/root/.openclaw/workspace/outputs/reports",
+      "purpose": "Generated reports, AI news summaries, analysis outputs",
+      "retention_days": 90,
+      "file_pattern": "report_YYYY-MM-DD.*"
+    },
+    "backups": {
+      "path": "/root/.openclaw/workspace/outputs/backups",
+      "purpose": "Database dumps, system backups, checkpoint files",
+      "retention_days": 365,
+      "file_pattern": "backup_YYYY-MM-DD.*"
+    },
+    "exports": {
+      "path": "/root/.openclaw/workspace/outputs/exports",
+      "purpose": "CSV exports, data extracts, generated artifacts",
+      "retention_days": 90,
+      "file_pattern": "export_YYYY-MM-DD.*"
+    }
+  },
+
+  "handoff_boundary": {
+    "description": "All artifacts written to disk before review/rendering",
+    "pattern": "tools write → /root/.openclaw/workspace/outputs → review → deliver"
+  },
+
+  "skills_outputs": {
+    "morning-briefing": {
+      "default_folder": "daily",
+      "formats": ["md", "json"]
+    },
+    "wizdom-summary": {
+      "default_folder": "reports",
+      "formats": ["md", "json"]
+    },
+    "birb-tracker": {
+      "default_folder": "daily",
+      "formats": ["json"]
+    },
+    "moonbirds-tracker": {
+      "default_folder": "backups",
+      "formats": ["json"]
+    }
+  }
+}
