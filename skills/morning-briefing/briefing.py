@@ -260,3 +260,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # Auto-post to Discord if webhook configured
+    os.system(f"cd {os.path.dirname(os.path.abspath(__file__))} && python3 post_discord.py")
