@@ -5,10 +5,10 @@ Guidelines for managing context window and conversation history during long runs
 ## When to Compact
 
 Compact conversation history when:
-- **Turn count exceeds**: 100 messages
-- **Token estimate exceeds**: 75% of context window
+- **Turn count exceeds**: 30 messages (aggressive mode)
+- **Token estimate exceeds**: 50% of context window
 - **Explicit trigger**: `/compact` or `session compaction` mentioned
-- **Automatic schedule**: Every 4 hours during continuous operation
+- **Automatic schedule**: Every 2 hours via cron (`compaction_cron.sh`)
 
 ## What to Preserve (Never Compress)
 
@@ -116,6 +116,19 @@ If session errors due to context overflow:
 2. Preserve only SOUL.md, USER.md, MEMORY.md
 3. Restart session with compacted context
 4. Restore from `memory/vectors/` as needed
+
+## Semantic Memory Search
+
+Before answering questions about prior work, always:
+```bash
+# Search semantic memory
+/memory_search query: "your question"
+
+# Get only relevant lines
+/memory_get path: MEMORY.md lines: 10 from: 50
+```
+
+This loads only relevant context instead of entire files.
 
 ## Last Updated
 
