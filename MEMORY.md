@@ -55,7 +55,18 @@
   - Battle monsters by answering reading questions
   - XP, gold, HP, and streak systems
 
-## Interests/Topics to Explore with Landon
+## OpenClaw Framework Features Explored
+- **Voice Wake + Talk Mode**: Always-on voice assistant with ElevenLabs integration
+- **iOS/Android Node**: Phone camera/location integration potential
+- **Live Canvas**: Visual workspace for dashboards and charts
+- **Multi-Channel**: Could add WhatsApp, Telegram, Signal
+- **Multi-Agent Routing**: Different agents for different channels/tasks
+- **Skills Platform**: ClawHub skill registry for discoverable plugins
+
+## Recent Notes
+- Git vector cache cleanup completed (392 files removed from repo tracking)
+- User exploring OpenClaw Discord and GitHub for implementation ideas
+- User interested in potential voice/canvas features
 - Crypto/perps trading (how much time does it take?)
 - Moonbirds NFT
 - What drains him most?
