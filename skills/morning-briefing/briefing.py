@@ -260,5 +260,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # Auto-post to Discord if webhook configured
-    os.system(f"cd {os.path.dirname(os.path.abspath(__file__))} && python3 post_discord.py")
+    # Send to Discord via OpenClaw message
+    os.system(f"cd {os.path.dirname(os.path.abspath(__file__))} && python3 send_discord.py")
