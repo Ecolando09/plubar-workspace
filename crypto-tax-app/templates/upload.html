@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+  <h2>📤 Upload Perp DEX Transactions</h2>
+  <p style="margin-bottom: 16px; color: #718096;">
+    Upload transaction history exports from perpetual DEX platforms.
+  </p>
+  
+  <form method="POST" enctype="multipart/form-data" id="upload-form">
+    <label>CSV File</label>
+    <input type="file" name="file" accept=".csv" required>
+    
+    <label>Platform</label>
+    <select name="platform" required>
+      <option value="">Select platform...</option>
+      <option value="hyperliquid">Hyperliquid</option>
+      <option value="lighter">Lighter</option>
+      <option value="dydx">dYdX</option>
+    </select>
+    
+    <button type="submit" class="btn btn-primary" id="submit-btn">📤 Upload & Parse</button>
+  </form>
+  
+  <div id="status" style="margin-top: 16px;"></div>
+</div>
+
+<div class="card">
+  <h2>📋 Supported Platforms</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Platform</th>
+        <th>Export Location</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Hyperliquid</td>
+        <td>History → Download CSV</td>
+      </tr>
+      <tr>
+        <td>Lighter</td>
+        <td>Portfolio → History → Export</td>
+      </tr>
+      <tr>
+        <td>dYdX</td>
+        <td>Positions → Export</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h2>💡 Expected CSV Columns</h2>
+  <p style="margin-bottom: 16px; color: #718096;">
+    Your CSV should have these columns (order doesn't matter):
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Column</th>
+        <th>Required</th>
+        <th>Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>date</td>
+        <td>✅ Yes</td>
+        <td>2025-01-15 14:30:00</td>
+      </tr>
+      <tr>
+        <td>type</td>
+        <td>✅ Yes</td>
+        <td>open_long, close_long, open_short, close_short, buy, sell, transfer</td>
+      </tr>
+      <tr>
+        <td>token</td>
+        <td>✅ Yes</td>
+        <td>BTC, SOL, ETH, PEPE</td>
+      </tr>
+      <tr>
+        <td>amount</td>
+        <td>✅ Yes</td>
+        <td>0.5, 1000, -250</td>
+      </tr>
+      <tr>
+        <td>price</td>
+        <td>Yes (for fills)</td>
+        <td>50000.00</td>
+      </tr>
+      <tr>
+        <td>total</td>
+        <td>Yes (for fills)</td>
+        <td>25000.00</td>
+      </tr>
+      <tr>
+        <td>pnl</td>
+        <td>No (calculated)</td>
+        <td>500.00, -200.00</td>
+      </tr>
+      <tr>
+        <td>fees</td>
+        <td>No</td>
+        <td>2.50</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+document.getElementById('upload-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const btn = document.getElementById('submit-btn');
+  const status = document.getElementById('status');
+  
+  btn.disabled = true;
+  btn.textContent = 'Parsing...';
+  
+  try {
+    const resp = await fetch('/upload', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const result = await resp.json();
+    
+    if (result.success) {
+      status.innerHTML = `<p style="color: #48bb78;">✅ ${result.message}</p>`;
+      e.target.reset();
+    } else {
+      status.innerHTML = `<p style="color: #f56565;">❌ ${result.error}</p>`;
+    }
+  } catch (e) {
+    status.innerHTML = `<p style="color: #f56565;">❌ Error: ${e.message}</p>`;
+  }
+  
+  btn.disabled = false;
+  btn.textContent = '📤 Upload & Parse';
+});
+</script>
+{% endblock %}

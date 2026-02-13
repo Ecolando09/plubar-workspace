@@ -129,7 +129,7 @@ def claim_meal(meal_id):
         return render_template('claim_error.html', message="This meal request has expired or been deleted.")
     
     if meal.get('claimed'):
-        return render_template('claim_error.html', message="This meal has already been claimed!")
+        return render_template('claim_already_claimed.html')
     
     # Get participant info from email param
     participant_email = request.args.get('email')
@@ -146,6 +146,7 @@ def claim_meal(meal_id):
 @app.route('/claim/<meal_id>/confirm', methods=['POST'])
 def confirm_claim(meal_id):
     payment_method = request.form.get('method', 'other')
+    participant_name = request.form.get('participant_name', 'Someone')
     
     db = load_db()
     
@@ -175,10 +176,14 @@ def confirm_claim(meal_id):
     meal['claimed_at'] = datetime.now().isoformat()
     meal['payment_method'] = payment_method
     meal['participant_email'] = participant_email
+    meal['participant_name'] = participant_name
     save_db(db)
     
+    # Send admin notification
+    send_claim_notification(participant_name, participant_email, meal)
+    
     # Show success with appropriate payment info
-    return render_template('claim_success.html', meal=meal, payment_method=payment_method)
+    return render_template('claim_success.html', meal=meal, payment_method=payment_method, participant_name=participant_name)
 
 # Admin login
 def admin_required(f):
@@ -309,6 +314,20 @@ def delete_participant(participant_id):
     db['participants'] = [p for p in db['participants'] if p['id'] != participant_id]
     save_db(db)
     return redirect(url_for('admin', success=f'{participant_name} has been removed from the train'))
+
+@app.route('/admin/delete-claimed')
+@admin_required
+def delete_claimed_meals():
+    db = load_db()
+    
+    # Count claimed meals before deleting
+    claimed_count = len([m for m in db['meals'] if m.get('claimed')])
+    
+    # Remove claimed meals
+    db['meals'] = [m for m in db['meals'] if not m.get('claimed')]
+    save_db(db)
+    
+    return redirect(url_for('admin', success=f'Deleted {claimed_count} claimed meal(s)'))
 
 @app.route('/admin/resend-notification/<meal_id>')
 @admin_required
@@ -451,6 +470,56 @@ def send_claim_confirmation(meal, participant):
         server.send_message(msg)
     
     print(f"📧 Sent claim confirmation to {participant['email']}")
+
+def send_claim_notification(participant_name, participant_email, meal):
+    """Send admin notification when a meal is claimed"""
+    admin_email = config['email']['sender_email']
+    
+    msg = MIMEMultipart('mixed')
+    msg['Subject'] = f"🚂 Meal Claimed by {participant_name}!"
+    msg['From'] = f"{config['email']['sender_name']} <{config['email']['sender_email']}>"
+    msg['To'] = admin_email
+    
+    meal_details = ""
+    if meal.get('meal_type'):
+        meal_details += f"<p><strong>Meal Type:</strong> {meal['meal_type']}</p>"
+    if meal.get('amount'):
+        meal_details += f"<p><strong>Amount:</strong> ${meal['amount']}</p>"
+    if meal.get('payment_method'):
+        meal_details += f"<p><strong>Payment Method:</strong> {meal['payment_method']}</p>"
+    
+    body = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #48bb78;">🎉 Meal Claimed!</h1>
+        </div>
+        <p>A meal has been claimed from the Meal Train!</p>
+        
+        <div style="background: #f0f4ff; padding: 20px; border-radius: 10px; margin: 20px 0;">
+            <p><strong>Who:</strong> {participant_name}</p>
+            <p><strong>Email:</strong> {participant_email}</p>
+            {meal_details}
+            <p><strong>Claimed At:</strong> {datetime.now().strftime('%Y-%m-%d %I:%M %p')}</p>
+        </div>
+        
+        <p style="color: #666; font-size: 14px;">
+            The Atlas family is being fed! 🍽️
+        </p>
+    </body>
+    </html>
+    """
+    
+    msg.attach(MIMEText(body, 'html', 'utf-8'))
+    
+    try:
+        with smtplib.SMTP(config['email']['smtp_server'], config['email']['smtp_port']) as server:
+            server.starttls()
+            server.login(config['email']['sender_email'], config['email']['sender_password'])
+            server.send_message(msg)
+        print(f"📧 Admin notified: {participant_name} claimed meal ${meal.get('amount', '?')}")
+    except Exception as e:
+        print(f"Failed to send admin notification: {e}")
 
 # Import yaml at module level
 

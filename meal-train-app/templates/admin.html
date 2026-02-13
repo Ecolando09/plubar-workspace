@@ -143,6 +143,16 @@ th{font:600 14px var(--font-family);color:var(--color-text-muted);
         
         <div class="section">
             <h2>📋 Meal History</h2>
+            
+            {% if stats.claimed > 0 %}
+            <div style="margin-bottom:var(--space-md);">
+                <a href="/admin/delete-claimed" class="btn btn-danger"
+                   onclick="return confirm('Delete all claimed meals? This cannot be undone.');">
+                    🗑️ Delete All Claimed Meals ({{ stats.claimed }})
+                </a>
+            </div>
+            {% endif %}
+            
             {% for meal in meals %}
             <div class="card meal-item {% if meal.claimed %}claimed{% endif %}">
                 <div class="meal-header">

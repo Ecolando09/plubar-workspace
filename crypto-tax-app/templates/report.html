@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card" style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); color: white;">
+  <h1 style="color: white;">📋 {{ report.year }} Tax Report</h1>
+  <p>Capital gains/losses from cryptocurrency transactions</p>
+</div>
+
+<div class="stats">
+  <div class="stat">
+    <div class="value" style="color: #48bb78;">$0.00</div>
+    <div class="label">Short-Term Gains</div>
+  </div>
+  <div class="stat">
+    <div class="value" style="color: #48bb78;">$0.00</div>
+    <div class="label">Long-Term Gains</div>
+  </div>
+  <div class="stat">
+    <div class="value" style="color: #f56565;">$0.00</div>
+    <div class="label">Short-Term Losses</div>
+  </div>
+  <div class="stat">
+    <div class="value" style="color: #f56565;">${{ "%.2f"|format(report.nft_losses) }}</div>
+    <div class="label">NFT Losses</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>📊 Summary</h2>
+  <table>
+    <tr>
+      <td>Total Proceeds from Sales</td>
+      <td style="text-align: right; font-weight: 600;">$0.00</td>
+    </tr>
+    <tr>
+      <td>Cost Basis of Items Sold</td>
+      <td style="text-align: right; font-weight: 600;">$0.00</td>
+    </tr>
+    <tr style="border-top: 2px solid #e2e8f0;">
+      <td style="font-weight: 700;">Net Gain/Loss</td>
+      <td style="text-align: right; font-weight: 700; color: #48bb78;">$0.00</td>
+    </tr>
+    <tr style="border-top: 2px solid #e2e8f0;">
+      <td><strong>NFT Worthless Securities Loss</strong></td>
+      <td style="text-align: right; font-weight: 700; color: #f56565;">-${{ "%.2f"|format(report.nft_losses) }}</td>
+    </tr>
+    <tr style="border-top: 2px solid #e2e8f0; background: #f7fafc;">
+      <td style="font-weight: 700; font-size: 18px;"><strong>Total Tax Deduction</strong></td>
+      <td style="text-align: right; font-weight: 700; font-size: 18px; color: #f56565;">
+        <strong>-${{ "%.2f"|format(report.nft_losses) }}</strong>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>📝 IRS Form Reference</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Form</th>
+        <th>Line</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Cryptocurrency Gains/Losses</td>
+        <td>Form 8949 / Schedule D</td>
+        <td>Capital assets</td>
+      </tr>
+      <tr>
+        <td>NFT Worthless Securities</td>
+        <td>Form 8949 / Schedule D</td>
+        <td>Section 165 loss</td>
+      </tr>
+      <tr>
+        <td>DeFi Staking Rewards</td>
+        <td>Schedule 1 (Form 1040)</td>
+        <td>Other income</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h2>⚠️ Disclaimer</h2>
+  <p style="color: #718096; font-size: 14px;">
+    This tool is for informational purposes only and does not constitute tax advice. 
+    Please consult with a qualified tax professional for your specific situation. 
+    Tax laws regarding cryptocurrency are complex and vary by jurisdiction.
+  </p>
+</div>
+
+<div style="display: flex; gap: 16px; margin-top: 24px;">
+  <button onclick="window.print()" class="btn btn-primary">🖨️ Print Report</button>
+  <a href="/" class="btn btn-primary">← Back to Dashboard</a>
+</div>
+{% endblock %}

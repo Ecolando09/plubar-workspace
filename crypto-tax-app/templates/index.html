@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="stats">
+  <div class="stat">
+    <div class="value">{{ tx_count }}</div>
+    <div class="label">Transactions</div>
+  </div>
+  <div class="stat">
+    <div class="value">${{ "%.2f"|format(total_bought) }}</div>
+    <div class="label">Total Bought</div>
+  </div>
+  <div class="stat">
+    <div class="value">${{ "%.2f"|format(total_sold) }}</div>
+    <div class="label">Total Sold</div>
+  </div>
+  <div class="stat">
+    <div class="value loss">${{ "%.2f"|format(nft_losses) }}</div>
+    <div class="label">NFT Losses</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>📊 Quick Actions</h2>
+  <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+    <a href="/wallets" class="btn btn-primary">➕ Add Wallet</a>
+    <a href="/upload" class="btn btn-primary">📤 Upload Transactions</a>
+    <a href="/nfts" class="btn btn-primary">🖼️ Track NFTs</a>
+    <a href="/report/2025" class="btn btn-primary">📋 2025 Tax Report</a>
+  </div>
+</div>
+
+<div class="card">
+  <h2>📝 Recent Transactions</h2>
+  <div id="recent-tx">
+    <p style="color: #718096;">No transactions yet. Upload a CSV or add wallets to get started.</p>
+  </div>
+</div>
+
+<div class="card">
+  <h2>💼 Wallet Summary</h2>
+  {% if wallets %}
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Network</th>
+        <th>Added</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for wallet in wallets %}
+      <tr>
+        <td>{{ wallet.name }}</td>
+        <td><code style="font-size: 12px;">{{ wallet.address[:20] }}...</code></td>
+        <td>{{ wallet.network }}</td>
+        <td>{{ wallet.created_at[:10] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color: #718096;">No wallets added yet.</p>
+  {% endif %}
+</div>
+
+<script>
+async function loadRecentTx() {
+  try {
+    const resp = await fetch('/api/transactions');
+    const txs = await resp.json();
+    
+    if (txs.length === 0) return;
+    
+    const container = document.getElementById('recent-tx');
+    let html = '<table><thead><tr><th>Date</th><th>Type</th><th>Token</th><th>Amount</th><th>Value</th></tr></thead><tbody>';
+    
+    txs.slice(0, 10).forEach(tx => {
+      const value = tx.total_value ? `$${parseFloat(tx.total_value).toFixed(2)}` : '-';
+      html += `<tr>
+        <td>${tx.date || '-'}</td>
+        <td class="${tx.type === 'buy' ? 'gain' : 'loss'}">${tx.type.toUpperCase()}</td>
+        <td>${tx.token}</td>
+        <td>${tx.amount || '-'}</td>
+        <td>${value}</td>
+      </tr>`;
+    });
+    
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  } catch (e) {
+    console.log('Could not load transactions');
+  }
+}
+loadRecentTx();
+</script>
+{% endblock %}

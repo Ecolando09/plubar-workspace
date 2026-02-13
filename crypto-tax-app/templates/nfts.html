@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card" style="background: linear-gradient(135deg, #f56565, #c53030); color: white;">
+  <h2 style="color: white;">🖼️ NFT Loss Tracker</h2>
+  <p>Track NFT purchases that have gone to zero (rugged projects).</p>
+  <h3 style="margin-top: 16px; font-size: 28px;">Total Losses: ${{ "%.2f"|format(total_losses) }}</h3>
+</div>
+
+<div class="card">
+  <h2>➕ Add NFT Purchase</h2>
+  <form method="POST">
+    <label>Collection Name</label>
+    <input type="text" name="collection" placeholder="e.g., Gatos by Basebed" required>
+    
+    <label>Token ID (optional)</label>
+    <input type="text" name="token_id" placeholder="e.g., #1234">
+    
+    <label>Purchase Price (USD)</label>
+    <input type="number" name="price" step="0.000001" placeholder="0.00" required>
+    
+    <label>Purchase Date</label>
+    <input type="date" name="date" required>
+    
+    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+      <input type="checkbox" name="rugged" style="width: auto; margin: 0;">
+      <span>🚨 This collection rugged (100% loss)</span>
+    </label>
+    
+    <button type="submit" class="btn btn-danger">Add NFT Loss</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>📉 Rugged NFTs (Tax Deductible Losses)</h2>
+  {% if nfts %}
+  <table>
+    <thead>
+      <tr>
+        <th>Collection</th>
+        <th>Token ID</th>
+        <th>Purchase Price</th>
+        <th>Date</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for nft in nfts %}
+      <tr style="{{ 'background: rgba(245, 101, 101, 0.1);' if nft.is_rugged else '' }}">
+        <td>{{ nft.collection_name }}</td>
+        <td>{{ nft.token_id or '-' }}</td>
+        <td class="loss">${{ "%.2f"|format(nft.purchase_price) }}</td>
+        <td>{{ nft.purchase_date }}</td>
+        <td>
+          {% if nft.is_rugged %}
+          <span style="background: #f56565; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px;">
+            💀 RUGGED
+          </span>
+          {% else %}
+          <span style="background: #48bb78; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px;">
+            Active
+          </span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color: #718096;">No NFT losses tracked yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>📝 Tax Note</h2>
+  <p style="color: #718096; font-size: 14px;">
+    💡 IRS guidance: Worthless securities (including NFTs) can be reported as a capital loss 
+    under Section 165. You can deduct up to $3,000 per year of net capital losses against 
+    ordinary income, with carryover rights for excess losses.
+  </p>
+</div>
+{% endblock %}

@@ -1,64 +1,23 @@
 {
-  "participants": [],
-  "meals": [
+  "participants": [
     {
-      "id": "y1Ac7Fkq4oknVHPx",
-      "note": "",
-      "meal_type": "Pizza",
-      "amount": "69",
-      "receipt_image": null,
-      "claimed": true,
-      "created_at": "2026-02-12T00:43:04.783703",
-      "email_sent": true,
-      "claimed_at": "2026-02-12T00:44:08.356078",
-      "payment_method": "venmo",
-      "participant_email": "landon.gennetten@gmail.com"
+      "id": "uC_OipnIk_YjSmYcqoLOLg",
+      "name": "Landon",
+      "email": "landon.gennetten@gmail.com",
+      "joined_at": "2026-02-12T22:55:13.073678"
     },
     {
-      "id": "pjyBuTODtdhMRpvm",
-      "note": "",
-      "meal_type": "66",
-      "amount": "55",
-      "receipt_image": "5dRH3wBIRMYSzoBUOi8UnA_1000017330.png",
-      "claimed": false,
-      "created_at": "2026-02-10T12:07:29.338361",
-      "email_sent": true
+      "id": "5q9RzfI3roW4vaLeQ9vZsA",
+      "name": "Papa Doug",
+      "email": "douglas@gennetten.com",
+      "joined_at": "2026-02-12T23:46:58.120942"
     },
     {
-      "id": "wQQGXyJ8PzRf8Aim",
-      "note": "",
-      "meal_type": "5",
-      "amount": "25",
-      "claimed": true,
-      "created_at": "2026-02-10T02:45:47.092002",
-      "email_sent": true,
-      "claimed_at": "2026-02-10T02:46:27.239368",
-      "payment_method": "venmo",
-      "participant_email": "landon.gennetten@gmail.com"
-    },
-    {
-      "id": "6sQKTcUWOG51vN-0",
-      "note": "",
-      "meal_type": "44",
-      "amount": "22",
-      "claimed": true,
-      "created_at": "2026-02-10T01:50:33.541976",
-      "email_sent": true,
-      "claimed_at": "2026-02-10T01:50:49.878198",
-      "payment_method": "other",
-      "participant_email": "test2@test.com"
-    },
-    {
-      "id": "YtF5Ah1B98SE0O1v",
-      "note": "",
-      "meal_type": "45",
-      "amount": "55",
-      "claimed": true,
-      "created_at": "2026-02-10T00:56:38.546948",
-      "email_sent": true,
-      "claimed_at": "2026-02-10T00:57:17.888851",
-      "payment_method": "other",
-      "participant_email": "landon.gennetten@gmail.com"
+      "id": "4qBSSW8SXm6v_nzjJhdLjA",
+      "name": "Papa Dougie",
+      "email": "douglas@gennetten.org",
+      "joined_at": "2026-02-12T23:47:52.244486"
     }
-  ]
+  ],
+  "meals": []
 }

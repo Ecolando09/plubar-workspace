@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+  <h2>➕ Add Wallet</h2>
+  <form method="POST">
+    <label>Wallet Name</label>
+    <input type="text" name="name" placeholder="e.g., My Main Wallet" required>
+    
+    <label>Wallet Address</label>
+    <input type="text" name="address" placeholder="0x... or Solana address" required>
+    
+    <label>Network</label>
+    <select name="network">
+      <option value="solana">Solana</option>
+      <option value="ethereum">Ethereum</option>
+      <option value="base">Base</option>
+      <option value="arbitrum">Arbitrum</option>
+      <option value="optimism">Optimism</option>
+    </select>
+    
+    <button type="submit" class="btn btn-primary">Add Wallet</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>💼 Your Wallets</h2>
+  {% if wallets %}
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Network</th>
+        <th>Added</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for wallet in wallets %}
+      <tr>
+        <td>{{ wallet.name }}</td>
+        <td><code>{{ wallet.address }}</code></td>
+        <td>{{ wallet.network }}</td>
+        <td>{{ wallet.created_at[:10] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color: #718096;">No wallets added yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>🔗 Explorer Links</h2>
+  <p style="margin-bottom: 16px;">Quick links to view your wallets on explorers:</p>
+  <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+    <a href="https://solscan.io" target="_blank" class="btn btn-primary">Solscan (Solana)</a>
+    <a href="https://etherscan.io" target="_blank" class="btn btn-primary">Etherscan (Ethereum)</a>
+    <a href="https://basescan.org" target="_blank" class="btn btn-primary">Basescan (Base)</a>
+  </div>
+</div>
+{% endblock %}

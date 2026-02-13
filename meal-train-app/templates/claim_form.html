@@ -68,19 +68,18 @@ h1{font:700 28px/1.2 Nunito,var(--font-family);color:var(--color-success);
         </div>
         
         <p style="text-align:center;margin-bottom:var(--space-lg);color:var(--color-text-secondary);">
-            {% if participant_name %}
-            Thank you for claiming this meal, {{ participant_name }}! 🚂
-            {% else %}
-            Thank you for claiming this meal! 🚂
-            {% endif %}
-        </p>
-        
-        <p style="text-align:center;color:var(--color-text-muted);font-size:14px;margin-bottom:var(--space-lg);">
-            Your dining box car will be removed from the train once you claim.
+            Who is claiming this meal?
         </p>
         
         <form method="POST" action="/claim/{{ meal.id }}/confirm">
             <input type="hidden" name="email" value="{{ request.args.get('email', '') }}">
+            
+            <div class="section">
+                <label style="display:block;margin-bottom:var(--space-sm);font-weight:600;">Your Name</label>
+                <input type="text" name="participant_name" placeholder="Enter your name" required
+                       style="width:100%;padding:var(--space-md);border:2px solid var(--color-border);border-radius:var(--radius-md);font-size:16px;">
+            </div>
+            
             <div class="payment-options">
                 <button type="submit" name="method" value="venmo" class="btn btn-venmo">
                     💳 Pay via Venmo
