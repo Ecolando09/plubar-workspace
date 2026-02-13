@@ -16,3 +16,7 @@ piper-tts/**/*.wav
 family-journal/uploads/*
 !family-journal/uploads/.gitkeep
 family-journal/google_drive/*.json
+
+# Memory vector cache (regenerates frequently)
+memory/vectors/*
+memory/precompact/*
