@@ -99,20 +99,52 @@ def get_viral_posts():
         return "• OpenClaw trending on GitHub\n• AI agent frameworks gaining traction\n• Claude + automation discussions on Hacker News"
 
 def get_substack_newsletter():
-    """Fetch latest newsletter from innermost@substack.com"""
+    """Fetch latest newsletter from innermost@substack.com via RSS"""
     try:
-        # Try using gog if configured for Gmail
-        gog_check = subprocess.run(
-            "which gog && gog gmail list --max 1 --query 'from:theinnermostloop@substack.com' 2>/dev/null",
-            shell=True, capture_output=True, text=True, timeout=15
-        )
-        if gog_check.returncode == 0 and gog_check.stdout:
-            return gog_check.stdout[:500]
-    except:
-        pass
-    
-    return """📬 **Newsletter Check**: Gmail OAuth not configured for substack@substack.com
-   → Configure `gog` skill to enable newsletter summaries"""
+        import xml.etree.ElementTree as ET
+        import re
+        
+        rss_url = "https://theinnermostloop.substack.com/feed"
+        
+        # Add User-Agent to bypass 403
+        req = urllib.request.Request(rss_url, headers={
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+            'Accept': 'application/rss+xml'
+        })
+        
+        with urllib.request.urlopen(req, timeout=15) as response:
+            data = response.read().decode('utf-8')
+        
+        # Simple RSS parsing without external libraries
+        import re
+        
+        # Extract title
+        title_match = re.search(r'<title><!\[CDATA\[(.*?)\]\]></title>', data)
+        title = title_match.group(1) if title_match else "Untitled"
+        
+        # Extract summary/description
+        summary_match = re.search(r'<description><!\[CDATA\[(.*?)\]\]></description>', data, re.DOTALL)
+        summary = summary_match.group(1)[:300] if summary_match else ""
+        summary = re.sub('<[^<]+?>', '', summary)  # Strip HTML tags
+        summary = summary.strip()
+        
+        # Extract link
+        link_match = re.search(r'<link>(.*?)</link>', data)
+        link = link_match.group(1) if link_match else ""
+        
+        # Extract published date
+        pub_match = re.search(r'<pubDate>(.*?)</pubDate>', data)
+        published = pub_match.group(1)[:16] if pub_match else ""
+        
+        return f"""📬 **Latest from The Innermost Loop**
+
+**{title}**
+{summary}...
+
+🔗 [Read more]({link})
+📅 {published}"""
+    except Exception as e:
+        return f"Could not fetch newsletter ({e})"
 
 def main():
     today = datetime.now().strftime("%B %d, %Y")
