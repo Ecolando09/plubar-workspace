@@ -15,3 +15,4 @@ piper-tts/**/*.wav
 # Uploads
 family-journal/uploads/*
 !family-journal/uploads/.gitkeep
+family-journal/google_drive/*.json
