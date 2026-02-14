@@ -25,7 +25,7 @@ def now_est():
     return datetime.now(EST)
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max for audio transcription
+app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024  # 1GB max for video uploads
 
 with open('config.yaml') as f:
     config = yaml.safe_load(f)
@@ -100,24 +100,51 @@ def generate_video_thumbnail(filepath):
         thumb_filename = f"thumb_{secrets.token_hex(8)}.jpg"
         thumbnail_path = os.path.join(app.config['UPLOAD_FOLDER'], 'thumbnails', thumb_filename)
         
-        # Extract frame at 1 second (or first frame if video is short)
-        cmd = [
+        # Try different ffmpeg approaches for problematic videos
+        cmd = None
+        errors = []
+        
+        # Approach 1: Standard extraction from start
+        cmd1 = [
             'ffmpeg', '-y',
-            '-ss', '1',
+            '-ss', '0.5',
             '-i', filepath,
             '-vframes', '1',
-            '-vf', 'scale=400:-1',
+            '-vf', 'scale=400:-1:flags=lanczos',
             '-q:v', '2',
             thumbnail_path
         ]
         
-        result = subprocess.run(cmd, capture_output=True, timeout=30)
+        # Approach 2: No seeking, handle corrupted headers
+        cmd2 = [
+            'ffmpeg', '-y',
+            '-err_detect', 'ignore_err',
+            '-i', filepath,
+            '-vframes', '1',
+            '-vf', 'scale=400:-1:flags=lanczos',
+            '-q:v', '2',
+            thumbnail_path
+        ]
         
-        if result.returncode == 0 and os.path.exists(thumbnail_path):
-            print(f"Generated thumbnail: {thumbnail_path}")
-            return thumb_filename
-        else:
-            print(f"Thumbnail generation failed: {result.stderr.decode()[:200]}")
+        # Approach 3: Force input format
+        cmd3 = [
+            'ffmpeg', '-y',
+            '-f', 'mpeg4',
+            '-i', filepath,
+            '-vframes', '1',
+            '-vf', 'scale=400:-1:flags=lanczos',
+            '-q:v', '2',
+            thumbnail_path
+        ]
+        
+        for i, cmd in enumerate([cmd1, cmd2, cmd3], 1):
+            result = subprocess.run(cmd, capture_output=True, timeout=30)
+            if result.returncode == 0 and os.path.exists(thumbnail_path) and os.path.getsize(thumbnail_path) > 100:
+                print(f"Generated thumbnail (approach {i}): {thumbnail_path}")
+                return thumb_filename
+            errors.append(f"Approach {i}: {result.stderr.decode()[:100]}")
+        
+        print(f"All thumbnail approaches failed: {errors}")
     except Exception as e:
         print(f"Error generating thumbnail: {e}")
     
@@ -154,8 +181,12 @@ def upload_progress():
     mime_type = guess_type(filename)[0]
     if mime_type and mime_type.startswith('video/'):
         print(f"Generating thumbnail for video: {filename}")
-        thumbnail = generate_video_thumbnail(filepath)
-        print(f"Thumbnail result: {thumbnail}")
+        try:
+            thumbnail = generate_video_thumbnail(filepath)
+            print(f"Thumbnail result: {thumbnail}")
+        except Exception as e:
+            print(f"Thumbnail generation error: {e}")
+            # Continue without thumbnail - upload should still work
     
     use_drive = google_drive_available and file_size >= MAX_ATTACHMENT_SIZE
     
@@ -342,7 +373,7 @@ def submit():
                 if f.get('thumbnail'):
                     video_thumbnails.append({
                         'url': f['url'],
-                        'thumbnail': f['thumbnail'],
+                        'thumbnail': os.path.basename(f['thumbnail']),
                         'filename': f.get('name', 'video')
                     })
                 else:
@@ -378,7 +409,7 @@ def submit():
                         if f.get('thumbnail'):
                             video_thumbnails.append({
                                 'url': local_url,
-                                'thumbnail': f['thumbnail'],
+                                'thumbnail': os.path.basename(f['thumbnail']),
                                 'filename': f.get('name', 'video')
                             })
                         else:
@@ -421,91 +452,92 @@ def submit():
             </div>
             '''
         
-        # Send to each kid - create fresh message for each
+        # Send ONE email to all kids using BCC
         sent_count = 0
         send_errors = []
         
-        for kid_email, kid_name in kid_emails.items():
-            # Build email body for each recipient
-            body_html = f"""
-            <html>
-            <body style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px;">
-                <h1 style="color: #4A90D9;">📖 A Story Just For You!</h1>
-                <p>{sender_name} just created a journal entry for you!</p>
-                <div style="background: #f5f5f5; padding: 20px; border-radius: 10px; white-space: pre-wrap;">{story}</div>
-                {thumbnails_html}
-                {links_html}
-                <p style="color: #666; font-size: 12px; margin-top: 30px;">
-                    Made with ❤️ by Family Journal
-                </p>
-            </body>
-            </html>
-            """
-            
-            msg = MIMEMultipart('mixed')
-            msg['Subject'] = f"📖 A Story from {sender_name} on {now.strftime('%Y-%m-%d')}!"
-            msg['From'] = f"{sender_name} <{config['email']['sender_email']}>"
-            msg['To'] = kid_email
-            msg.attach(MIMEText(body_html, 'html', 'utf-8'))
-            
-            # Attach images if under limit
-            if attach_images:
-                for filepath in image_attachments:
-                    try:
-                        filename = os.path.basename(filepath)
-                        mime_type, _ = guess_type(filename)
-                        if not mime_type:
-                            mime_type = 'application/octet-stream'
-                        
-                        with open(filepath, 'rb') as fp:
-                            # Use MIMEBase with explicit MIME type for better compatibility
-                            maintype, subtype = mime_type.split('/', 1)
-                            part = MIMEBase(maintype, subtype)
-                            part.set_payload(fp.read())
-                            encoders.encode_base64(part)
-                            # Use clean display name (strip timestamp prefix)
-                            display_name = filename.split('_', 2)[-1] if filename.count('_') >= 2 else filename
-                            part.add_header('Content-Disposition', 'attachment', filename=display_name)
-                            msg.attach(part)
-                        print(f"Attached image: {filename}")
-                    except Exception as e:
-                        print(f"Error attaching image {filepath}: {e}")
-            
-            # Attach other local files (audio, small videos)
-            for filepath in other_attachments:
+        if not kid_emails:
+            return jsonify({'error': 'No recipients selected'}), 400
+        
+        # Build email body (same for all)
+        body_html = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px;">
+            <h1 style="color: #4A90D9;">📖 A Story Just For You!</h1>
+            <p>{sender_name} just created a journal entry for you!</p>
+            <div style="background: #f5f5f5; padding: 20px; border-radius: 10px; white-space: pre-wrap;">{story}</div>
+            {thumbnails_html}
+            {links_html}
+            <p style="color: #666; font-size: 12px; margin-top: 30px;">
+                Made with ❤️ by Family Journal
+            </p>
+        </body>
+        </html>
+        """
+        
+        msg = MIMEMultipart('mixed')
+        msg['Subject'] = f"📖 A Story from {sender_name} on {now.strftime('%Y-%m-%d')}!"
+        msg['From'] = f"{sender_name} <{config['email']['sender_email']}>"
+        msg['BCC'] = ', '.join(kid_emails.keys())  # Blind carbon copy all recipients
+        msg.attach(MIMEText(body_html, 'html', 'utf-8'))
+        
+        # Attach images if under limit
+        if attach_images:
+            for filepath in image_attachments:
                 try:
                     filename = os.path.basename(filepath)
                     mime_type, _ = guess_type(filename)
                     if not mime_type:
                         mime_type = 'application/octet-stream'
                     
-                    maintype, subtype = mime_type.split('/', 1)
-                    
                     with open(filepath, 'rb') as fp:
-                        if maintype == 'audio':
-                            part = MIMEAudio(fp.read(), _subtype=subtype)
-                        else:
-                            part = MIMEBase('application', 'octet-stream')
-                            part.set_payload(fp.read())
-                            encoders.encode_base64(part)
-                        
-                        part.add_header('Content-Disposition', 'attachment', filename=filename)
+                        maintype, subtype = mime_type.split('/', 1)
+                        part = MIMEBase(maintype, subtype)
+                        part.set_payload(fp.read())
+                        encoders.encode_base64(part)
+                        display_name = filename.split('_', 2)[-1] if filename.count('_') >= 2 else filename
+                        part.add_header('Content-Disposition', 'attachment', filename=display_name)
                         msg.attach(part)
-                    print(f"Attached file: {filename}")
+                    print(f"Attached image: {filename}")
                 except Exception as e:
-                    print(f"Error attaching {filepath}: {e}")
-            
+                    print(f"Error attaching image {filepath}: {e}")
+        
+        # Attach other local files (audio, small videos)
+        for filepath in other_attachments:
             try:
-                with smtplib.SMTP(config['email']['smtp_server'], config['email']['smtp_port']) as server:
-                    server.starttls()
-                    server.login(config['email']['sender_email'], config['email']['sender_password'])
-                    server.send_message(msg)
-                sent_count += 1
-                print(f"Sent to {kid_email}")
+                filename = os.path.basename(filepath)
+                mime_type, _ = guess_type(filename)
+                if not mime_type:
+                    mime_type = 'application/octet-stream'
+                
+                maintype, subtype = mime_type.split('/', 1)
+                
+                with open(filepath, 'rb') as fp:
+                    if maintype == 'audio':
+                        part = MIMEAudio(fp.read(), _subtype=subtype)
+                    else:
+                        part = MIMEBase('application', 'octet-stream')
+                        part.set_payload(fp.read())
+                        encoders.encode_base64(part)
+                    
+                    part.add_header('Content-Disposition', 'attachment', filename=filename)
+                    msg.attach(part)
+                print(f"Attached file: {filename}")
             except Exception as e:
-                error_msg = f"Failed to send to {kid_email}: {e}"
-                print(error_msg)
-                send_errors.append(error_msg)
+                print(f"Error attaching {filepath}: {e}")
+        
+        # Send email
+        try:
+            with smtplib.SMTP(config['email']['smtp_server'], config['email']['smtp_port']) as server:
+                server.starttls()
+                server.login(config['email']['sender_email'], config['email']['sender_password'])
+                server.send_message(msg)
+            sent_count = len(kid_emails)
+            print(f"Sent to {len(kid_emails)} recipients: {list(kid_emails.keys())}")
+        except Exception as e:
+            error_msg = f'Failed to send email: {e}'
+            print(error_msg)
+            send_errors.append(error_msg)
         
         # CC parents - create fresh message for each
         for parent_email in parent_emails:
