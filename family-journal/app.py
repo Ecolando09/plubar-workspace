@@ -3,6 +3,7 @@ import os
 import yaml
 import smtplib
 import subprocess
+import requests
 from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -220,6 +221,97 @@ def serve_file(filename):
 @app.route('/thumbnails/<path:filename>')
 def serve_thumbnail(filename):
     return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], 'thumbnails'), filename)
+
+ELEVENLABS_API_KEY = 'e1eddd1d04c1770684999c8d9a050d833a18cea0058a9e244f8d7485eab3e728'
+ELEVENLABS_TRANSCRIBE_URL = 'https://api.elevenlabs.io/v1/speech-to-text'
+
+def extract_audio_to_wav(video_path, wav_path):
+    """Extract audio from video and convert to WAV (16000Hz mono) for ElevenLabs"""
+    try:
+        cmd = [
+            'ffmpeg', '-y',
+            '-i', video_path,
+            '-ar', '16000',
+            '-ac', '1',
+            '-acodec', 'pcm_s16le',
+            wav_path
+        ]
+        result = subprocess.run(cmd, capture_output=True, timeout=120)
+        return result.returncode == 0 and os.path.exists(wav_path)
+    except Exception as e:
+        print(f"Error extracting audio: {e}")
+        return False
+
+@app.route('/transcribe', methods=['POST'])
+def transcribe():
+    """Transcribe audio/video file using ElevenLabs"""
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    # Save uploaded file
+    filename = file.filename
+    temp_path = os.path.join(app.config['UPLOAD_FOLDER'], f"temp_{now_est().strftime('%Y%m%d_%H%M%S')}_{filename}")
+    file.save(temp_path)
+    
+    try:
+        # Convert to WAV
+        wav_path = temp_path.replace(os.path.splitext(temp_path)[1], '.wav')
+        
+        if not extract_audio_to_wav(temp_path, wav_path):
+            # If conversion fails, try using the original if it's already audio
+            mime_type = guess_type(filename)[0]
+            if mime_type and mime_type.startswith('audio/'):
+                wav_path = temp_path
+            else:
+                os.remove(temp_path)
+                return jsonify({'error': 'Failed to extract audio from file'}), 500
+        
+        # Transcribe using ElevenLabs
+        with open(wav_path, 'rb') as audio_file:
+            files = {'file': ('audio.wav', audio_file, 'audio/wav')}
+            data = {
+                'model_id': 'scribe_v2',
+                'language_code': 'en'
+            }
+            headers = {
+                'xi-api-key': ELEVENLABS_API_KEY
+            }
+            
+            response = requests.post(
+                ELEVENLABS_TRANSCRIBE_URL,
+                files=files,
+                data=data,
+                headers=headers,
+                timeout=60
+            )
+        
+        if response.status_code == 200:
+            result = response.json()
+            transcript = result.get('text', '')
+            os.remove(temp_path)
+            if os.path.exists(wav_path) and wav_path != temp_path:
+                os.remove(wav_path)
+            return jsonify({'transcript': transcript})
+        else:
+            error_msg = response.text
+            os.remove(temp_path)
+            if os.path.exists(wav_path) and wav_path != temp_path:
+                os.remove(wav_path)
+            return jsonify({'error': f'Transcription failed: {error_msg}'}), 500
+            
+    except Exception as e:
+        print(f"Transcription error: {e}")
+        try:
+            os.remove(temp_path)
+            if os.path.exists(wav_path) and wav_path != temp_path:
+                os.remove(wav_path)
+        except:
+            pass
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/submit', methods=['POST'])
 def submit():
