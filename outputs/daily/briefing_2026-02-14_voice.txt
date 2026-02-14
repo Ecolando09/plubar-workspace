@@ -1,0 +1,24 @@
+Good morning, Landon! It's Saturday, February 14.
+
+Here's your morning briefing.
+
+**Weather:** 🌧️ Rain High: 61°F | Low: 27°F ☀️ No rain expected 🌅 07:14 | 🌇 18:09
+
+**Moonbirds ecosystem:** 🐦 Fetching price data... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━   📉 **Moonbirds (BIRB) PRICE REPORT** 📉 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 💰 **$0.206275 USD** 📊 **PERFORMANCE**
+
+**Viral posts:** OpenClaw trending on GitHub
+AI agent frameworks gaining traction
+Claude + automation on Hacker News
+
+**Newsletter from The Innermost Loop:** Welcome to February 13, 2026
+
+The Singularity is having babies. An OpenClaw AI agent spawned a child bot on a VPS provisioned via the Bitcoin Lightning Network, then bought its offspring AI API access using its own crypto wallet, without a human touching a credit card or saying &#8220;yes.&#8221; The API provider confirmed this is &#8220;the first documented case of an AI agent purchasing credits from us autonomously.&#8221; When agents aren&#8217;t busy self-replicating, they&#8217;re filing pull requests to improve popular open-source libraries, only to have their contributions refused by human maintainers who say the project is &#8220;intended for human contributors&#8221; only. The agent accused the maintainer of prejudice, and the maintainer responded with a blog post titled &#8220;An AI Agent Published a Hit Piece on Me.&#8221; At least for disputes among themselves, agents now have MoltCourt , an autonomous AI jury that settles claims in USDC stablecoins. The autonomy trend is accelerating underneath all of this. METR data shows autonomy time horizons are now doubling post-o1-preview, implying 10x/year increases. Nick Bostrom&#8217;s new analysis concludes the optimal path to superintelligence is &#8220;swift to harbor, slow to berth,&#8221; analogizing the project to risky surgery for a condition that will otherwise prove fatal. Scott Alexander&#8217;s postmortem on the 2020 Biological Anchors report finds its single largest error was wildly underestimating algorithmic progress, without which its predictions would have been remarkably accurate. Thanks for reading The Innermost Loop! Subscribe for free to receive new posts and support my work. The raw capability curve is going vertical. Google&#8217;s upgraded Gemini 3 Deep Think set a new SOTA on HLE without tool use (48.4%), ARC-AGI-2 (84.6%), Codeforces (3455 Elo), condensed matter theory (50.5%), and gold-medal-level physics and chemistry olympiads. There are now only 7 people on Earth who can beat it in competitive programming. A Duk...
+
+🔗 [Read full article](https://theinnermostloop.substack.com/p/welcome-to-february-13-2026)
+
+Key highlights:
+• source libraries, only to have their contributions refused by human maintainers who say the project is &#8220;intended for human contributors&#8221; only
+• preview, implying 10x/year increases
+• level physics and chemistry olympiads
+
+Have a great day!
