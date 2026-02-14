@@ -84,7 +84,6 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
 .progress.active{display:block}
 .progress-bar{height:24px;background:var(--color-border);
   border-radius:var(--radius-full);overflow:hidden}
-.progress-bar-small{height:8px;background:var(--color-border);border-radius:var(--radius-full);overflow:hidden}
 .progress-fill{height:100%;background:var(--color-primary);border-radius:var(--radius-full);transition:width 0.3s ease}
 @keyframes progress-stripes{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .progress-item{margin-bottom:var(--space-md)}
@@ -102,7 +101,6 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
 .file-item .remove{color:var(--color-error);cursor:pointer;padding:var(--space-sm)}
 .status-message{padding:var(--space-md);border-radius:var(--radius-md);
   margin-top:var(--space-md);display:none}
-.status-message.active{display:block}
 .status-message.success{background:var(--color-success-light);color:#22543d}
 .status-message.error{background:var(--color-error-light);color:#742a2a}
 .recorder{background:var(--color-background);border-radius:var(--radius-lg);
@@ -179,15 +177,6 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
             </div>
             <div id="uploadProgress"></div>
             <div class="file-list" id="fileList"></div>
-            
-            <!-- Transcribe Audio Button -->
-            <div id="transcribeSection" style="display:none;margin-top:var(--space-md)">
-                <button id="transcribeBtn" class="btn btn-full" style="background:#667eea;color:white;margin-top:var(--space-sm)" onclick="transcribeFromFile()">
-                    🎵 Transcribe Audio from Video/Audio
-                </button>
-                <div id="transcribeStatus" style="display:none;margin-top:var(--space-sm);padding:var(--space-md);background:var(--color-info-light);border-radius:var(--radius-md);">
-                </div>
-            </div>
         </div>
         
         <div class="section">
@@ -224,6 +213,55 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
             const emailSection = document.getElementById('ccMeEmailSection');
             emailSection.style.display = checkbox.checked ? 'block' : 'none';
         }
+        
+        // Transcribe voice recording
+        async function transcribeVoiceRecording(blob) {
+            console.log('Starting transcription...');
+            const storyField = document.getElementById('story');
+            const statusMsg = document.getElementById('statusMessage');
+            
+            statusMsg.className = 'status-message loading active';
+            statusMsg.innerHTML = '<span class="loading-spinner"></span>Transcribing voice recording...';
+            console.log('Sending to /transcribe endpoint...');
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', blob, 'voice_recording.webm');
+                console.log('FormData created, sending request...');
+                
+                const response = await fetch('/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
+                console.log('Response status:', response.status);
+                
+                const result = await response.json();
+                console.log('Result:', result);
+                
+                if (result.transcript) {
+                    const currentStory = storyField.value.trim();
+                    const newStory = currentStory ? currentStory + '\n\n' + result.transcript : result.transcript;
+                    storyField.value = newStory;
+                    
+                    statusMsg.className = 'status-message success active';
+                    statusMsg.textContent = '✅ Voice recording transcribed and added to story!';
+                    console.log('Transcription complete!');
+                } else {
+                    statusMsg.className = 'status-message error active';
+                    statusMsg.textContent = '⚠️ Transcription failed: ' + (result.error || 'Unknown error');
+                }
+            } catch (err) {
+                console.error('Transcription error:', err);
+                statusMsg.className = 'status-message error active';
+                statusMsg.textContent = '⚠️ Transcription error: ' + err.message;
+            }
+            
+            // Clear status after 3 seconds
+            setTimeout(() => {
+                statusMsg.className = 'status-message';
+            }, 3000);
+        }
+        
         recordBtn.onclick = async () => {
             if (mediaRecorder) {
                 mediaRecorder.stop();
@@ -234,10 +272,13 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
                 mediaRecorder = new MediaRecorder(stream);
                 const chunks = [];
                 mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                mediaRecorder.onstop = () => {
+                mediaRecorder.onstop = async () => {
                     audioBlob = new Blob(chunks, { type: 'audio/webm' });
                     document.getElementById('audioPlayer').src = URL.createObjectURL(audioBlob);
                     document.getElementById('audioPlayer').style.display = 'block';
+                    
+                    // Auto-transcribe the voice recording
+                    await transcribeVoiceRecording(audioBlob);
                 };
                 mediaRecorder.start();
                 recordBtn.textContent = 'Stop Recording';
@@ -313,6 +354,10 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
                                 <span>✅ ${file.name}</span>
                                 <span>Done</span>
                             `;
+                            
+                            // Auto-transcribe audio files
+                            const lastFile = uploadedFiles[uploadedFiles.length - 1];
+                            autoTranscribeAudio(lastFile);
                         } else {
                             item.querySelector('.progress-label').innerHTML = `
                                 <span>❌ ${file.name}</span>
@@ -363,111 +408,69 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
                 `;
                 fileList.appendChild(div);
             });
-            updateTranscribeSection();
         }
         
         function removeFile(i) {
             uploadedFiles.splice(i, 1);
             renderFileList();
-            updateTranscribeSection();
-        }
-        
-        function updateTranscribeSection() {
-            const section = document.getElementById('transcribeSection');
-            const btn = document.getElementById('transcribeBtn');
-            
-            // Show button if there are video/audio files
-            const hasMedia = uploadedFiles.some(f => {
-                const name = f.name.toLowerCase();
-                return name.endsWith('.mp4') || name.endsWith('.mov') || name.endsWith('.webm') || 
-                       name.endsWith('.m4v') || name.endsWith('.ogg') || name.endsWith('.opus') ||
-                       name.endsWith('.wav') || name.endsWith('.mp3');
-            });
-            
-            section.style.display = hasMedia ? 'block' : 'none';
-        }
-        
-        // Transcribe audio from already uploaded video/audio files (local files only)
-        function transcribeFromFile() {
-            // Find a video/audio file that's already uploaded (must have local code, not Drive)
-            const mediaFile = uploadedFiles.find(f => {
-                const name = f.name.toLowerCase();
-                return !f.drive && f.code && (
-                    name.endsWith('.mp4') || name.endsWith('.mov') || name.endsWith('.webm') || 
-                    name.endsWith('.m4v') || name.endsWith('.ogg') || name.endsWith('.opus') ||
-                    name.endsWith('.wav') || name.endsWith('.mp3') || name.endsWith('.aac') ||
-                    name.endsWith('.webm')
-                );
-            });
-            
-            if (!mediaFile) {
-                alert('No video/audio file found. Please upload a video file (not via Google Drive) first.');
-                return;
-            }
-            
-            const btn = document.getElementById('transcribeBtn');
-            const status = document.getElementById('transcribeStatus');
-            
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading-spinner"></span> Transcribing...';
-            status.style.display = 'block';
-            status.innerHTML = `
-                <div class="progress-bar"><div class="progress-fill" style="width:0%;transition:width 0.3s"></div></div>
-                <div style="margin-top:8px">📥 Downloading and transcribing: ${mediaFile.name}</div>
-            `;
-            
-            const fileUrl = `/uploads/${mediaFile.code}`;
-            
-            // Download the file and transcribe it
-            fetch(fileUrl)
-                .then(response => {
-                    if (!response.ok) throw new Error('Failed to access file');
-                    return response.blob();
-                })
-                .then(blob => {
-                    // Update progress
-                    status.innerHTML = `
-                        <div class="progress-bar"><div class="progress-fill" style="width:50%;transition:width 0.3s"></div></div>
-                        <div style="margin-top:8px">🎵 Transcribing audio...</div>
-                    `;
-                    
-                    const formData = new FormData();
-                    formData.append('file', blob, mediaFile.name);
-                    
-                    return fetch('/transcribe', {
-                        method: 'POST',
-                        body: formData
-                    });
-                })
-                .then(response => response.json())
-                .then(result => {
-                    if (result.transcript) {
-                        // Append transcript to story
-                        const storyField = document.getElementById('story');
-                        const currentStory = storyField.value.trim();
-                        const newStory = currentStory ? currentStory + '\n\n' + result.transcript : result.transcript;
-                        storyField.value = newStory;
-                        
-                        status.innerHTML = '✅ Transcript added to story!';
-                        status.style.background = 'var(--color-success-light)';
-                    } else {
-                        throw new Error(result.error || 'Transcription failed');
-                    }
-                    btn.disabled = false;
-                    btn.innerHTML = '🎵 Transcribe Video/Audio';
-                })
-                .catch(err => {
-                    status.innerHTML = '❌ ' + err.message;
-                    status.style.background = 'var(--color-error-light)';
-                    btn.disabled = false;
-                    btn.innerHTML = '🎵 Transcribe Video/Audio';
-                });
         }
         
         function formatSize(bytes) {
             if (bytes < 1024) return bytes + ' B';
             if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
             return (bytes/(1024*1024)).toFixed(1) + ' MB';
+        }
+        
+        // Auto-transcribe uploaded audio files
+        async function autoTranscribeAudio(fileData) {
+            const isAudio = fileData.name.toLowerCase().match(/\.(mp3|wav|ogg|opus|m4a|aac|webm)$/);
+            if (!isAudio) return;
+            
+            const storyField = document.getElementById('story');
+            const statusMsg = document.getElementById('statusMessage');
+            
+            // Show transcription status
+            if (!statusMsg.classList.contains('active')) {
+                statusMsg.className = 'status-message loading active';
+                statusMsg.innerHTML = '<span class="loading-spinner"></span>Transcribing audio...';
+            }
+            
+            try {
+                // Download the file and transcribe
+                const response = await fetch(fileData.url || '/uploads/' + fileData.code);
+                const blob = await response.blob();
+                
+                const formData = new FormData();
+                formData.append('file', blob, fileData.name);
+                
+                const transcribeResponse = await fetch('/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await transcribeResponse.json();
+                
+                if (result.transcript) {
+                    const currentStory = storyField.value.trim();
+                    const newStory = currentStory ? currentStory + '\n\n' + result.transcript : result.transcript;
+                    storyField.value = newStory;
+                    
+                    statusMsg.className = 'status-message success active';
+                    statusMsg.textContent = '✅ Audio transcribed and added to story!';
+                    
+                    // Clear status after 3 seconds
+                    setTimeout(() => {
+                        statusMsg.className = 'status-message';
+                    }, 3000);
+                } else {
+                    statusMsg.className = 'status-message error active';
+                    statusMsg.textContent = '⚠️ Transcription failed (file sent anyway)';
+                }
+            } catch (err) {
+                console.error('Transcription error:', err);
+                statusMsg.className = 'status-message error active';
+                statusMsg.textContent = '⚠️ Transcription error (file sent anyway)';
+            }
         }
         
         // Form submission

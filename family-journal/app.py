@@ -15,7 +15,7 @@ from mimetypes import guess_type
 import secrets
 import string
 
-from flask import Flask, render_template, request, jsonify, send_from_directory, url_for
+from flask import Flask, render_template, request, jsonify, send_from_directory, url_for, Response, make_response
 
 # Set timezone to EST
 EST = timezone(timedelta(hours=-5))  # EST is UTC-5 (or -4 for EDT)
@@ -32,7 +32,7 @@ app.config['UPLOAD_FOLDER'] = config['app']['upload_folder']
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'thumbnails'), exist_ok=True)
 
-MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024
+MAX_ATTACHMENT_SIZE = 100 * 1024 * 1024  # 100 MB - allow larger local files for transcription
 
 google_drive_available = False
 try:
@@ -225,26 +225,17 @@ def serve_thumbnail(filename):
 ELEVENLABS_API_KEY = 'e1eddd1d04c1770684999c8d9a050d833a18cea0058a9e244f8d7485eab3e728'
 ELEVENLABS_TRANSCRIBE_URL = 'https://api.elevenlabs.io/v1/speech-to-text'
 
-def extract_audio_to_wav(video_path, wav_path):
-    """Extract audio from video and convert to WAV (16000Hz mono) for ElevenLabs"""
-    try:
-        cmd = [
-            'ffmpeg', '-y',
-            '-i', video_path,
-            '-ar', '16000',
-            '-ac', '1',
-            '-acodec', 'pcm_s16le',
-            wav_path
-        ]
-        result = subprocess.run(cmd, capture_output=True, timeout=120)
-        return result.returncode == 0 and os.path.exists(wav_path)
-    except Exception as e:
-        print(f"Error extracting audio: {e}")
-        return False
-
-@app.route('/transcribe', methods=['POST'])
-def transcribe():
-    """Transcribe audio/video file using ElevenLabs"""
+@app.route('/transcribe', methods=['POST', 'OPTIONS'])
+def transcribe_audio():
+    """Transcribe audio file using ElevenLabs"""
+    # Handle CORS preflight
+    if request.method == 'OPTIONS':
+        response = make_response()
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Methods', 'POST')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        return response
+    
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided'}), 400
     
@@ -252,65 +243,33 @@ def transcribe():
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
     
-    # Save uploaded file
-    filename = file.filename
-    temp_path = os.path.join(app.config['UPLOAD_FOLDER'], f"temp_{now_est().strftime('%Y%m%d_%H%M%S')}_{filename}")
-    file.save(temp_path)
+    # Check if it's an audio file
+    mime_type = guess_type(file.filename)[0]
+    if not mime_type or not mime_type.startswith('audio/'):
+        return jsonify({'error': 'Only audio files can be transcribed'}), 400
     
     try:
-        # Convert to WAV
-        wav_path = temp_path.replace(os.path.splitext(temp_path)[1], '.wav')
+        files = {'file': (file.filename, file.stream, mime_type)}
+        data = {'model_id': 'scribe_v2', 'language_code': 'en'}
+        headers = {'xi-api-key': ELEVENLABS_API_KEY}
         
-        if not extract_audio_to_wav(temp_path, wav_path):
-            # If conversion fails, try using the original if it's already audio
-            mime_type = guess_type(filename)[0]
-            if mime_type and mime_type.startswith('audio/'):
-                wav_path = temp_path
-            else:
-                os.remove(temp_path)
-                return jsonify({'error': 'Failed to extract audio from file'}), 500
-        
-        # Transcribe using ElevenLabs
-        with open(wav_path, 'rb') as audio_file:
-            files = {'file': ('audio.wav', audio_file, 'audio/wav')}
-            data = {
-                'model_id': 'scribe_v2',
-                'language_code': 'en'
-            }
-            headers = {
-                'xi-api-key': ELEVENLABS_API_KEY
-            }
-            
-            response = requests.post(
-                ELEVENLABS_TRANSCRIBE_URL,
-                files=files,
-                data=data,
-                headers=headers,
-                timeout=60
-            )
+        response = requests.post(
+            ELEVENLABS_TRANSCRIBE_URL,
+            files=files,
+            data=data,
+            headers=headers,
+            timeout=60
+        )
         
         if response.status_code == 200:
             result = response.json()
             transcript = result.get('text', '')
-            os.remove(temp_path)
-            if os.path.exists(wav_path) and wav_path != temp_path:
-                os.remove(wav_path)
             return jsonify({'transcript': transcript})
         else:
-            error_msg = response.text
-            os.remove(temp_path)
-            if os.path.exists(wav_path) and wav_path != temp_path:
-                os.remove(wav_path)
-            return jsonify({'error': f'Transcription failed: {error_msg}'}), 500
+            return jsonify({'error': 'Transcription failed'}), 500
             
     except Exception as e:
         print(f"Transcription error: {e}")
-        try:
-            os.remove(temp_path)
-            if os.path.exists(wav_path) and wav_path != temp_path:
-                os.remove(wav_path)
-        except:
-            pass
         return jsonify({'error': str(e)}), 500
 
 @app.route('/submit', methods=['POST'])
@@ -356,6 +315,25 @@ def submit():
         video_thumbnails = []  # Track videos with thumbnails
         image_attachments = []  # Track images separately
         other_attachments = []
+        
+        # Handle voice recording from recordBtn
+        voice_recording = request.files.get('files')
+        if voice_recording and voice_recording.filename:
+            voice_filename = f"voice_{now_est().strftime('%Y%m%d_%H%M%S')}.webm"
+            voice_filepath = os.path.join(app.config['UPLOAD_FOLDER'], voice_filename)
+            voice_recording.save(voice_filepath)
+            voice_code = create_link(voice_filepath)
+            # Add to other_attachments for email
+            other_attachments.append(voice_filepath)
+            print(f"Saved voice recording: {voice_filename}")
+            
+            # Also update uploaded_files so it shows in UI (optional)
+            uploaded_files.append({
+                'name': 'Voice Recording',
+                'code': voice_code,
+                'size': os.path.getsize(voice_filepath),
+                'drive': False
+            })
         
         for f in uploaded_files:
             if f.get('drive') and f.get('url'):
