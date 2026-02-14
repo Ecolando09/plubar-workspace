@@ -25,6 +25,7 @@ def now_est():
     return datetime.now(EST)
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max for audio transcription
 
 with open('config.yaml') as f:
     config = yaml.safe_load(f)

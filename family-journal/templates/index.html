@@ -127,7 +127,7 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
     <div class="container">
         <img src="/static/banner.png" alt="Atlas Family Journal" style="width:100%;max-width:600px;display:block;margin:0 auto 24px">
         
-        <div class="section">
+        <div class="container" style="padding-top:20px;">
             <label>Who is sharing this story?</label>
             <input type="text" id="senderName" class="input" placeholder="Dad, Mom, Auntie, Nan, etc.">
         </div>
@@ -216,27 +216,33 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
         
         // Transcribe voice recording
         async function transcribeVoiceRecording(blob) {
-            console.log('Starting transcription...');
             const storyField = document.getElementById('story');
             const statusMsg = document.getElementById('statusMessage');
+            const recordBtn = document.getElementById('recordBtn');
+            
+            // Disable button during transcription
+            recordBtn.disabled = true;
+            recordBtn.textContent = '⏳ Transcribing...';
             
             statusMsg.className = 'status-message loading active';
             statusMsg.innerHTML = '<span class="loading-spinner"></span>Transcribing voice recording...';
-            console.log('Sending to /transcribe endpoint...');
             
             try {
                 const formData = new FormData();
-                formData.append('file', blob, 'voice_recording.webm');
-                console.log('FormData created, sending request...');
+                // Use proper filename extension
+                const extension = blob.extension || (blob.type.includes('mp4') ? '.m4a' : '.webm');
+                formData.append('file', blob, 'voice_recording' + extension);
                 
                 const response = await fetch('/transcribe', {
                     method: 'POST',
                     body: formData
                 });
-                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error('Transcription failed with status: ' + response.status);
+                }
                 
                 const result = await response.json();
-                console.log('Result:', result);
                 
                 if (result.transcript) {
                     const currentStory = storyField.value.trim();
@@ -244,27 +250,31 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
                     storyField.value = newStory;
                     
                     statusMsg.className = 'status-message success active';
-                    statusMsg.textContent = '✅ Voice recording transcribed and added to story!';
-                    console.log('Transcription complete!');
+                    statusMsg.textContent = '✅ Transcribed! Check the story field.';
                 } else {
-                    statusMsg.className = 'status-message error active';
-                    statusMsg.textContent = '⚠️ Transcription failed: ' + (result.error || 'Unknown error');
+                    throw new Error(result.error || 'No transcript returned');
                 }
             } catch (err) {
                 console.error('Transcription error:', err);
                 statusMsg.className = 'status-message error active';
-                statusMsg.textContent = '⚠️ Transcription error: ' + err.message;
+                statusMsg.textContent = '⚠️ Transcription failed: ' + err.message;
             }
             
-            // Clear status after 3 seconds
+            // Re-enable button
+            recordBtn.disabled = false;
+            recordBtn.textContent = '🎤 Start Recording';
+            
+            // Clear status after 5 seconds
             setTimeout(() => {
                 statusMsg.className = 'status-message';
-            }, 3000);
+            }, 5000);
         }
         
         recordBtn.onclick = async () => {
             if (mediaRecorder) {
                 mediaRecorder.stop();
+                // Stop all tracks to release microphone
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
                 recordBtn.textContent = 'Start Recording';
                 mediaRecorder = null;
             } else {
@@ -273,7 +283,9 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
                 const chunks = [];
                 mediaRecorder.ondataavailable = e => chunks.push(e.data);
                 mediaRecorder.onstop = async () => {
-                    audioBlob = new Blob(chunks, { type: 'audio/webm' });
+                    audioBlob = new Blob(chunks, { type: 'audio/ogg' });
+                    // Override extension to .ogg regardless of browser format
+                    audioBlob.extension = '.ogg';
                     document.getElementById('audioPlayer').src = URL.createObjectURL(audioBlob);
                     document.getElementById('audioPlayer').style.display = 'block';
                     
@@ -430,15 +442,28 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
             const statusMsg = document.getElementById('statusMessage');
             
             // Show transcription status
-            if (!statusMsg.classList.contains('active')) {
-                statusMsg.className = 'status-message loading active';
-                statusMsg.innerHTML = '<span class="loading-spinner"></span>Transcribing audio...';
-            }
+            statusMsg.className = 'status-message loading active';
+            statusMsg.innerHTML = '<span class="loading-spinner"></span>Transcribing audio...';
             
             try {
-                // Download the file and transcribe
+                let blob;
+                
+                // Handle Google Drive files - they need to be transcribed on the backend
+                if (fileData.drive && fileData.url) {
+                    // For Drive files, we can't download them directly from the browser
+                    // Show info message and suggest backend transcription
+                    statusMsg.className = 'status-message error active';
+                    statusMsg.textContent = 'ℹ️ Drive files will be transcribed when sent to kids';
+                    console.log('Drive file uploaded - transcription will happen on backend');
+                    return;
+                }
+                
+                // Download local file and transcribe
                 const response = await fetch(fileData.url || '/uploads/' + fileData.code);
-                const blob = await response.blob();
+                if (!response.ok) {
+                    throw new Error('Failed to download file: ' + response.status);
+                }
+                blob = await response.blob();
                 
                 const formData = new FormData();
                 formData.append('file', blob, fileData.name);
@@ -464,12 +489,12 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
                     }, 3000);
                 } else {
                     statusMsg.className = 'status-message error active';
-                    statusMsg.textContent = '⚠️ Transcription failed (file sent anyway)';
+                    statusMsg.textContent = '⚠️ Transcription failed: ' + (result.error || 'Unknown error') + ' (file sent anyway)';
                 }
             } catch (err) {
                 console.error('Transcription error:', err);
                 statusMsg.className = 'status-message error active';
-                statusMsg.textContent = '⚠️ Transcription error (file sent anyway)';
+                statusMsg.textContent = '⚠️ Transcription error: ' + err.message + ' (file sent anyway)';
             }
         }
         
@@ -496,7 +521,10 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
             checkedKids.forEach(cb => formData.append('kids', cb.value));
             
             if (audioBlob) {
-                formData.append('files', new File([audioBlob], 'voice.webm', { type: 'audio/webm' }));
+                const extension = audioBlob.extension || '.webm';
+                const filename = 'voice_recording' + extension;
+                const mimeType = audioBlob.type;
+                formData.append('files', new File([audioBlob], filename, { type: mimeType }));
             }
             
             if (uploadedFiles.length > 0) {
@@ -504,11 +532,15 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
             }
             
             try {
+                console.log('Sending form data...');
                 const response = await fetch('/submit', { method: 'POST', body: formData });
+                console.log('Response status:', response.status);
                 const result = await response.json();
+                console.log('Response:', result);
                 
                 if (response.ok) {
-                    showStatus('✅ ' + result.message, 'success');
+                    console.log('Showing success!');
+                    showAlert('✅ ' + result.message, 'success');
                     // Reset form
                     document.getElementById('story').value = '';
                     document.getElementById('senderName').value = '';
@@ -519,14 +551,15 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
                     checkedKids.forEach(cb => cb.checked = false);
                     document.getElementById('files').value = '';
                     document.getElementById('uploadProgress').innerHTML = '';
+                    submitBtn.disabled = false;
                     submitBtn.textContent = 'Send to Kids';
                 } else {
-                    showStatus('❌ ' + (result.error || 'Error sending'), 'error');
+                    showAlert('❌ ' + (result.error || 'Error sending'), 'error');
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Send to Kids';
                 }
             } catch (err) {
-                showStatus('❌ Network error', 'error');
+                showAlert('❌ Network error - please try again', 'error');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Send to Kids';
             }
@@ -536,6 +569,28 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
             const el = document.getElementById('statusMessage');
             el.textContent = msg;
             el.className = 'status-message ' + type + ' active';
+        }
+        
+        function showAlert(msg, type) {
+            const statusMsg = document.getElementById('statusMessage');
+            
+            // Update status message where "Sending..." appears
+            statusMsg.textContent = msg;
+            if (type === 'success') {
+                statusMsg.style.background = '#48bb78';
+                statusMsg.style.color = 'white';
+            } else {
+                statusMsg.style.background = '#f56565';
+                statusMsg.style.color = 'white';
+            }
+            statusMsg.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                statusMsg.style.display = 'none';
+                statusMsg.style.background = '';
+                statusMsg.style.color = '';
+            }, 5000);
         }
     </script>
 </body>
