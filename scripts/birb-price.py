@@ -160,6 +160,10 @@ def generate_discord_output(metrics, old_price, nft_floors, old_nft_floors):
     else:
         direction = "➡️"
     
+    # Check for 10%+ move (triggers alert)
+    is_big_move = abs(change_24h) >= 10 if change_24h is not None else False
+    alert_emoji = "🚨 10%+ MOVE!" if is_big_move else ""
+    
     # Calculate local change from history
     local_change = None
     if old_price and old_price > 0:
@@ -169,7 +173,7 @@ def generate_discord_output(metrics, old_price, nft_floors, old_nft_floors):
     
     output = []
     output.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-    output.append(f"   {direction} **{name} ({symbol}) PRICE REPORT** {direction}")
+    output.append(f"   {direction} **{name} ({symbol}) PRICE REPORT** {direction} {alert_emoji}")
     output.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     output.append("")
     output.append(f"💰 **${price:.6f} USD**")
@@ -208,6 +212,14 @@ def generate_discord_output(metrics, old_price, nft_floors, old_nft_floors):
             output.append(f"   {collection:12} N/A")
     
     output.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    
+    # Note about alert threshold
+    if is_big_move:
+        output.append("")
+        output.append("🚨 **10%+ MOVE DETECTED!** 🚨")
+    else:
+        output.append("")
+        output.append("(Alert fires on 10%+ 24h move)")
     
     return "\n".join(output)
 

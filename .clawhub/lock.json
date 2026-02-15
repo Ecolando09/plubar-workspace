@@ -28,6 +28,10 @@
     "gog": {
       "version": "1.0.0",
       "installedAt": 1770751790329
+    },
+    "grok": {
+      "version": "1.0.3",
+      "installedAt": 1771170406724
     }
   }
 }
