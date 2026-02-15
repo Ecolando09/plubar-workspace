@@ -520,6 +520,22 @@ h2{font:600 24px/1.25 Nunito,var(--font-family);color:var(--color-text-primary);
             formData.append('sender_name', senderName);
             checkedKids.forEach(cb => formData.append('kids', cb.value));
             
+            // CC parents checkbox
+            const ccParents = document.querySelector('input[name="cc_parents"]');
+            if (ccParents && ccParents.checked) {
+                formData.append('cc_parents', 'true');
+            }
+            
+            // CC me checkbox
+            const ccMe = document.getElementById('ccMeCheckbox');
+            if (ccMe && ccMe.checked) {
+                formData.append('cc_me', 'true');
+                const ccMeEmail = document.getElementById('ccMeEmail').value.trim();
+                if (ccMeEmail) {
+                    formData.append('cc_me_email', ccMeEmail);
+                }
+            }
+            
             if (audioBlob) {
                 const extension = audioBlob.extension || '.webm';
                 const filename = 'voice_recording' + extension;
