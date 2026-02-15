@@ -126,7 +126,7 @@ def claim_meal(meal_id):
             break
     
     if not meal:
-        return render_template('claim_error.html', message="This meal request has expired or been deleted.")
+        return render_template('claim_error.html', message="Thank you for trying to claim this meal! It has already been claimed by someone else. Please look out for a future meal to claim 🙏.")
     
     if meal.get('claimed'):
         return render_template('claim_already_claimed.html')
@@ -158,7 +158,7 @@ def confirm_claim(meal_id):
             break
     
     if not meal:
-        return render_template('claim_error.html', message="This meal request has expired or been deleted.")
+        return render_template('claim_error.html', message="Thank you for trying to claim this meal! It has already been claimed by someone else. Please look out for a future meal to claim 🙏.")
     
     if meal.get('claimed'):
         return render_template('claim_error.html', message="This meal has already been claimed!")
