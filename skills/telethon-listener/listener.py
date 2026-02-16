@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Weekly Wizdom Listener - Simple polling"""
+"""Weekly Wizdom Listener - Analysts/Admins Only"""
 import os
 import sys
 from datetime import datetime
@@ -15,8 +15,23 @@ API_HASH = os.environ.get('API_HASH')
 DISCORD_TOKEN = os.environ.get('DISCORD_BOT_TOKEN')
 DISCORD_CHANNEL = os.environ.get('DISCORD_CHANNEL_ID')
 
-TRADE_KW = ['entry', 'exit', 'long', 'short', 'tp', 'sl', 'signal', 'buy', 'sell', 'futures']
-SENT_KW = ['bullish', 'bearish', 'pump', 'crash', 'moon', 'rekt', 'breakout', 'trend']
+# Known analysts and admins - UPDATE THIS LIST
+ANALYSTS_ADMINS = {
+    'wizardofsoho',      # Wizard of soho
+    'derivativesmonkey',  # Derivatives Monkey
+    'pidgeonn',           # Pidgeonn
+    'cryptofox6969',      # CryptoFox
+    'daniel4sol',         # Daniel
+}
+
+# Also check display names (lowercase, no spaces for matching)
+ANALYST_DISPLAY_NAMES = {
+    'wizard of soho',
+    'derivatives monkey',
+    'pidgeonn',
+    'cryptofox',
+    'daniel',
+}
 
 log_file = open('/tmp/wizdom.log', 'a')
 
@@ -30,6 +45,9 @@ def log(msg):
 log("=" * 60)
 log("Weekly Wizdom Listener Starting")
 log("=" * 60)
+log(f"Monitoring: Analysts/Admins only")
+log(f"Known analysts/admins: {', '.join(ANALYSTS_ADMINS) if ANALYSTS_ADMINS else 'NONE - UPDATE LIST'}")
+log("-" * 60)
 
 client = TelegramClient('auth_session', API_ID, API_HASH)
 
@@ -48,9 +66,8 @@ async def run():
         log("ERROR: Weekly Wizdom not found!")
         return
     
-    log(f"Monitoring: {channel.title}")
+    log(f"Channel: {channel.title}")
     log(f"Discord: {'Yes' if DISCORD_TOKEN else 'No'}")
-    log("-" * 60)
     
     last_id = None
     
@@ -63,19 +80,26 @@ async def run():
                     continue
                 last_id = max(last_id or 0, m.id)
                 
-                txt = m.text.lower()
-                is_trade = sum(1 for k in TRADE_KW if k in txt) >= 2
-                is_sent = sum(1 for k in SENT_KW if k in txt) >= 2
+                # Get sender
+                sender = None
+                sender_name = None
+                if m.sender:
+                    sender = m.sender.username or ""
+                    sender_name = m.sender.first_name or ""
                 
-                if not (is_trade or is_sent):
+                # Check username and display name
+                sender_lower = sender.lower().replace('@', '') if sender else ""
+                sender_name_lower = sender_name.lower() if sender_name else ""
+                
+                is_analyst = (
+                    sender_lower in ANALYSTS_ADMINS or 
+                    sender_name_lower in ANALYST_DISPLAY_NAMES
+                )
+                
+                if not is_analyst:
                     continue
                 
-                sender = "Unknown"
-                if m.sender:
-                    sender = m.sender.username or m.sender.first_name
-                
-                tag = "📈 TRADE" if is_trade else "💬 SENTIMENT"
-                log(f"{tag} | {sender}: {m.text[:70]}...")
+                log(f"✅ FORWARDED | {sender}: {m.text[:50]}...")
             
             await asyncio.sleep(10)
             
